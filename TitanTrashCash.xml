@@ -1,0 +1,27 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+	<Script file="TitanTrashCash.lua"/>
+	<Frame parent="UIParent">
+		<Frames>
+			<Button name="TitanPanelTrashCashButton" inherits="TitanPanelComboTemplate" frameStrata="FULLSCREEN" toplevel="true">
+				<Scripts>
+					<OnLoad>
+							TitanTrashCash_OnLoad(self);
+							TitanPanelButton_OnLoad(self);
+					</OnLoad>
+					<OnShow>
+							TitanTrashCash_OnShow();
+							TitanPanelButton_OnShow(self);
+					</OnShow>
+					<OnEvent>
+							TitanTrashCash_OnEvent(self, event, ...);
+					</OnEvent>
+					<OnClick>
+							TitanTrashCash_OnClick(self, button);
+							TitanPanelButton_OnClick(self, button);
+					</OnClick>
+				</Scripts>
+			</Button>
+		</Frames>
+	</Frame>
+</Ui>
