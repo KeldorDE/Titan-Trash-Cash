@@ -104,20 +104,19 @@ function TitanTrashCash:FormatMoney(amount)
   };
 
   if showIcon then
-    tmpTable['Gold'] = tostring(gold) .. ' ' .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon', true);
-    tmpTable['Silver'] = tostring(silver) .. ' ' .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon', true);
-    tmpTable['Copper'] = tostring(copper) .. ' ' .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon', true);
+    tmpTable['Gold'] = tostring(gold) .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon', true);
+    tmpTable['Silver'] = tostring(silver) .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon', true);
+    tmpTable['Copper'] = tostring(copper) .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon', true);
   else
     tmpTable['Gold'] = tostring(gold) .. L['TITAN_GOLD_GOLD'];
     tmpTable['Silver'] = tostring(silver) .. L['TITAN_GOLD_SILVER'];
-    tmpTable['Copper'] = tostring(coppper) .. L['TITAN_GOLD_COPPER'];
+    tmpTable['Copper'] = tostring(copper) .. L['TITAN_GOLD_COPPER'];
   end
 
   if showColoredText then
-    --gc = "|cFFFFFF00"
-		--sc = "|cFFCCCCCC"
-		--cc = "|cFFFF6600"
-    --tmpTable['Gold'] = TitanUtils_GetColoredText(tmpTable['Gold'], { r = 1, g = 1, b = 1 });
+    tmpTable['Gold'] = '|cFFFFFF00' .. tmpTable['Gold'] .. FONT_COLOR_CODE_CLOSE;
+    tmpTable['Silver'] = '|cFFCCCCCC' .. tmpTable['Silver'] .. FONT_COLOR_CODE_CLOSE;
+    tmpTable['Copper'] = '|cFFFF6600' .. tmpTable['Copper'] .. FONT_COLOR_CODE_CLOSE;
   end
 
   if gold > 0 then
