@@ -24,3 +24,4 @@ Please use the [curseforge](https://wow.curseforge.com/projects/titan-panel-tras
 **AddOn API Documentation:**
 * http://wowwiki.wikia.com/wiki/Category:World_of_Warcraft_API
 * https://wow.gamepedia.com/World_of_Warcraft_API
+* https://www.townlong-yak.com/framexml/live

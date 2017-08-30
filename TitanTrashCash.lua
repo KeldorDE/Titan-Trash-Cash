@@ -7,24 +7,11 @@
 local TITAN_TRASH_CASH_ID = 'TrashCash';
 local ADDON_NAME = 'Titan Trash Cash';
 local L = LibStub('AceLocale-3.0'):GetLocale('Titan', true);
-local TitanTrashCash = LibStub('AceAddon-3.0'):NewAddon(TITAN_TRASH_CASH_ID, 'AceConsole-3.0', 'AceHook-3.0');
+local TitanTrashCash = LibStub('AceAddon-3.0'):NewAddon(TITAN_TRASH_CASH_ID, 'AceConsole-3.0', 'AceEvent-3.0');
 local ADDON_VERSION = GetAddOnMetadata('TitanTrashCash', 'Version');
 
--- **************************************************************************
--- NAME : TitanTrashCash:OnInitialize()
--- DESC : Is called by AceAddon when the addon is first loaded.
--- **************************************************************************
-function TitanTrashCash:OnInitialize()
-  --LibStub('AceConfig-3.0'):RegisterOptionsTable(ADDON_NAME, TitanFarmBuddy:GetConfigOption());
-  LibStub('AceConfigDialog-3.0'):AddToBlizOptions(ADDON_NAME);
-end
-
--- **************************************************************************
--- NAME : TitanTrashCash_OnLoad()
--- DESC : Registers the plugin upon it loading.
--- **************************************************************************
 function TitanTrashCash_OnLoad(self)
-	self.registry = {
+  self.registry = {
 		id = TITAN_TRASH_CASH_ID,
 		category = 'Information',
 		version = TITAN_VERSION,
@@ -48,15 +35,18 @@ function TitanTrashCash_OnLoad(self)
 			DisplayOnRightSide = false,
 		}
 	};
-
-	self:RegisterEvent('BAG_UPDATE');
 end
 
-
-
+-- **************************************************************************
+-- NAME : TitanTrashCash:OnInitialize()
+-- DESC : Is called by AceAddon when the addon is first loaded.
+-- **************************************************************************
+function TitanTrashCash:OnInitialize()
+	self:RegisterEvent('BAG_UPDATE', 'BagUpdate');
+end
 
 -- **************************************************************************
--- NAME : TitanTrashCash_GetButtonText()
+-- NAME : TitanTrashCash_GetButtonText()()
 -- DESC : Calculate the money amount of trash items.
 -- **************************************************************************
 function TitanTrashCash_GetButtonText(id)
@@ -78,24 +68,65 @@ function TitanTrashCash_GetButtonText(id)
 	return TitanTrashCash:FormatMoney(trashAmount);
 end
 
+-- **************************************************************************
+-- NAME : TitanTrashCash:GetTooltipText()
+-- DESC : Display tooltip text.
+-- **************************************************************************
+function TitanTrashCash_GetTooltipText()
+
+	local str = 'test';
+
+	return str;
+end
+
+-- **************************************************************************
+-- NAME : TitanTrashCash_OnEvent()
+-- DESC : Parse events registered to plugin and act on them.
+-- **************************************************************************
+function TitanTrashCash:BagUpdate(self, event, ...)
+
+
+	TitanPanelButton_UpdateButton(TITAN_TRASH_CASH_ID);
+end
+
 function TitanTrashCash:FormatMoney(amount)
 
   local str = '';
-  local oneGold = 10000;
-  local oneSilver = 100;
+  local showIcon = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowIcon');
+  local showColoredText = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowColoredText');
+  local gold = floor(abs(amount / 10000));
+  local silver = floor(abs(mod(amount / 100, 100)));
+  local copper = floor(abs(mod(amount, 100)));
+  local tmpTable = {
+    Gold = '',
+    Silver = '',
+    Copper = '',
+  };
 
-  gold = (math.floor(amount / oneGold) or 0)
-  amount = amount - (gold * oneGold);
-  silver = (math.floor(amount / oneSilver) or 0)
-  copper = amount - (silver * oneSilver)
+  if showIcon then
+    tmpTable['Gold'] = tostring(gold) .. ' ' .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon', true);
+    tmpTable['Silver'] = tostring(silver) .. ' ' .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon', true);
+    tmpTable['Copper'] = tostring(copper) .. ' ' .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon', true);
+  else
+    tmpTable['Gold'] = tostring(gold) .. L['TITAN_GOLD_GOLD'];
+    tmpTable['Silver'] = tostring(silver) .. L['TITAN_GOLD_SILVER'];
+    tmpTable['Copper'] = tostring(coppper) .. L['TITAN_GOLD_COPPER'];
+  end
+
+  if showColoredText then
+    --gc = "|cFFFFFF00"
+		--sc = "|cFFCCCCCC"
+		--cc = "|cFFFF6600"
+    --tmpTable['Gold'] = TitanUtils_GetColoredText(tmpTable['Gold'], { r = 1, g = 1, b = 1 });
+  end
 
   if gold > 0 then
-    str = TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon', true) .. tostring(gold) .. ' ';
-    str = str .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon', true) .. tostring(silver) .. ' ';
+    str = str .. tmpTable['Gold'] .. ' ';
+    str = str .. tmpTable['Silver'] .. ' ';
   elseif silver > 0 then
-    str = str .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon', true) .. tostring(silver) .. ' ';
+    str = str .. tmpTable['Silver'] .. ' ';
   end
-  str = str .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon', true) .. tostring(copper);
+  str = str .. tmpTable['Copper'];
 
   return str;
 end
@@ -113,45 +144,6 @@ function TitanTrashCash:GetIconString(icon, space)
 	return str;
 end
 
+function TitanTrashCash:GetColoredString()
 
--- **************************************************************************
--- NAME : TitanTrashCash_OnClick()
--- DESC : Handles click events to the Titan Button.
--- **************************************************************************
-function TitanTrashCash_OnClick(self, button)
-	if (button == 'LeftButton') then
-		-- Workarround for opening controls instead of AddOn options
-		-- Call it two times to ensure the AddOn panel is opened
-		--InterfaceOptionsFrame_OpenToCategory(ADDON_NAME);
-		--InterfaceOptionsFrame_OpenToCategory(ADDON_NAME);
- 	end
-end
-
--- **************************************************************************
--- NAME : TitanTrashCash_GetTooltipText()
--- DESC : Display tooltip text.
--- **************************************************************************
-function TitanTrashCash_GetTooltipText()
-
-	local str = 'test';
-
-	return str;
-end
-
--- **************************************************************************
--- NAME : TitanTrashCash_OnEvent()
--- DESC : Parse events registered to plugin and act on them.
--- **************************************************************************
-function TitanTrashCash_OnEvent(self, event, ...)
-
-
-	TitanPanelButton_UpdateButton(TITAN_TRASH_CASH_ID);
-end
-
--- **************************************************************************
--- NAME : TitanTrashCash_OnShow()
--- DESC : Display button when plugin is visible.
--- **************************************************************************
-function TitanTrashCash_OnShow(self)
-	TitanPanelButton_OnShow(self);
 end
