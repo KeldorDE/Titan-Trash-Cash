@@ -6,10 +6,10 @@ An World of Wacraft AddOn that extends the Titan Panel AddOn that shows the mone
 * Show the money amount of trash item inside your bags.
 
 **Translations**  
-If you want to help to translate this AddOn please use the [curseforge](https://wow.curseforge.com/projects/titan-panel-farm-buddy/localization) localization page.
+If you want to help to translate this AddOn please use the [curseforge](https://wow.curseforge.com/projects/titan-panel-trash-cash/localization) localization page.
 
 **Bug Reports and Feature Requests**  
-Please use the [curseforge](https://wow.curseforge.com/projects/titan-panel-farm-buddy/issues) ticketing systems to submit bug reports and feature requests.
+Please use the [curseforge](https://wow.curseforge.com/projects/titan-panel-trash-cash/issues) ticketing systems to submit bug reports and feature requests.
 
 ---
 # Links
