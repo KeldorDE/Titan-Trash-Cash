@@ -13,14 +13,14 @@ Please use the [curseforge](https://wow.curseforge.com/projects/titan-panel-tras
 
 ---
 # Links
-**Github:** https://github.com/KeldorDE/Titan-Trash-Cash
+**Github:** https://github.com/KeldorDE/Titan-Trash-Cash  
 **Curse:** https://mods.curse.com/addons/wow/274536-titan-panel-trash-cash  
 **Curseforge:** https://wow.curseforge.com/projects/titan-panel-trash-cash
 
 ---
 # Usefull Links for Development
 **World of Warcraft Icon List:** http://www.wowhead.com/icons  
-**WowAce Documentation:** https://www.wowace.com/projects/ace3/pages/
+**WowAce Documentation:** https://www.wowace.com/projects/ace3/pages/  
 **AddOn API Documentation:**
 * http://wowwiki.wikia.com/wiki/Category:World_of_Warcraft_API
 * https://wow.gamepedia.com/World_of_Warcraft_API
