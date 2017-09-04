@@ -60,7 +60,7 @@ function TitanTrashCash_GetButtonText(id)
       if itemID ~= nil and quality == 0 then
         local itemSellPrice = select(11, GetItemInfo(itemID));
         trashCount = trashCount + 1;
-        trashAmount = trashAmount + (count * tonumber(select(11, GetItemInfo(itemID))));
+        trashAmount = trashAmount + (count * tonumber(itemSellPrice));
       end
     end
   end
@@ -136,7 +136,7 @@ end
 -- **************************************************************************
 function TitanTrashCash:GetIconString(icon, space)
   local fontSize = TitanPanelGetVar('FontSize');
-	local str = '|T' .. icon .. ':' .. fontSize .. ':' .. fontSize .. ':2:0|t';
+	local str = '|T' .. icon .. ':' .. fontSize .. '|t';
 	if space == true then
 		str = str .. ' ';
 	end
