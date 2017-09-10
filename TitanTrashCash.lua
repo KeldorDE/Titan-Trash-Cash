@@ -122,7 +122,7 @@ function TitanTrashCash:FormatMoney(amount)
   end
 
   if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowLabelText') then
-    str = 'Trash: ';
+    str = L['TRASH_CASH_TRASH'] .. ': ';
   end
 
   if gold > 0 then
