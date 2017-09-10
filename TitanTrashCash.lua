@@ -80,15 +80,17 @@ function TitanTrashCash_GetTooltipText()
 end
 
 -- **************************************************************************
--- NAME : TitanTrashCash_OnEvent()
+-- NAME : TitanTrashCash:BagUpdate()
 -- DESC : Parse events registered to plugin and act on them.
 -- **************************************************************************
 function TitanTrashCash:BagUpdate(self, event, ...)
-
-
 	TitanPanelButton_UpdateButton(TITAN_TRASH_CASH_ID);
 end
 
+-- **************************************************************************
+-- NAME : TitanTrashCash:FormatMoney()
+-- DESC : Formats the given amount of money in copper in human readable format.
+-- **************************************************************************
 function TitanTrashCash:FormatMoney(amount)
 
   local str = '';
@@ -119,6 +121,10 @@ function TitanTrashCash:FormatMoney(amount)
     tmpTable['Copper'] = '|cFFFF6600' .. tmpTable['Copper'] .. FONT_COLOR_CODE_CLOSE;
   end
 
+  if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowLabelText') then
+    str = 'Trash: ';
+  end
+
   if gold > 0 then
     str = str .. tmpTable['Gold'] .. ' ';
     str = str .. tmpTable['Silver'] .. ' ';
@@ -128,6 +134,25 @@ function TitanTrashCash:FormatMoney(amount)
   str = str .. tmpTable['Copper'];
 
   return str;
+end
+
+-- **************************************************************************
+-- NAME : TitanPanelRightClickMenu_PrepareTrashCashMenu()
+-- DESC : Display rightclick menu options
+-- **************************************************************************
+function TitanPanelRightClickMenu_PrepareTrashCashMenu(frame, level, menuList)
+
+	if level == 1 then
+
+		TitanPanelRightClickMenu_AddTitle(TitanPlugins[TITAN_TRASH_CASH_ID].menuText, level);
+
+		TitanPanelRightClickMenu_AddSpacer();
+		TitanPanelRightClickMenu_AddToggleIcon(TITAN_TRASH_CASH_ID);
+		TitanPanelRightClickMenu_AddToggleLabelText(TITAN_TRASH_CASH_ID);
+		TitanPanelRightClickMenu_AddToggleColoredText(TITAN_TRASH_CASH_ID);
+		TitanPanelRightClickMenu_AddSpacer();
+		TitanPanelRightClickMenu_AddCommand(L['TITAN_PANEL_MENU_HIDE'], TITAN_TRASH_CASH_ID, TITAN_PANEL_MENU_FUNC_HIDE);
+	end
 end
 
 -- **************************************************************************
@@ -141,8 +166,4 @@ function TitanTrashCash:GetIconString(icon, space)
 		str = str .. ' ';
 	end
 	return str;
-end
-
-function TitanTrashCash:GetColoredString()
-
 end
