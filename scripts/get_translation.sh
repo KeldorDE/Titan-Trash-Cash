@@ -4,7 +4,7 @@ LANGS=( "enUS" "deDE" "frFR" "esES" "itIT" "ruRU" "koKR" "zhCN" "zhTW" "esMX" "p
 
 ROOT=$(pwd)
 if [ "${ROOT: -8}" == "/scripts" ]; then
-  ROOT="${ROOT::-8}"
+  ROOT=$(echo "${ROOT}" | rev | cut -c 8- | rev)
 fi
 
 INCLUDE_API_FILE="${ROOT}/scripts/api.token.sh"

@@ -50,22 +50,8 @@ end
 -- DESC : Calculate the money amount of trash items.
 -- **************************************************************************
 function TitanTrashCash_GetButtonText(id)
-
-  local trashCount = 0;
-  local trashAmount = 0;
-
-  for bag = 0, 5 do
-    for slot = 1, GetContainerNumSlots(bag) do
-      local count, _, quality, _, _, _, _, _, itemID = select(2, GetContainerItemInfo(bag, slot));
-      if itemID ~= nil and quality == 0 then
-        local itemSellPrice = select(11, GetItemInfo(itemID));
-        trashCount = trashCount + 1;
-        trashAmount = trashAmount + (count * tonumber(itemSellPrice));
-      end
-    end
-  end
-
-	return TitanTrashCash:FormatMoney(trashAmount);
+  local trashData = TitanTrashCash:GetTrashData();
+  return TitanTrashCash:FormatMoney(trashData.Amount, false);
 end
 
 -- **************************************************************************
@@ -74,7 +60,23 @@ end
 -- **************************************************************************
 function TitanTrashCash_GetTooltipText()
 
-	local str = 'test';
+  local trashData = TitanTrashCash:GetTrashData();
+	local str = '';
+
+  if trashData.Count > 0 then
+
+    local textIndex = '';
+    if trashData.Count == 1 then
+      textIndex = 'TRASH_CASH_ITEM';
+    else
+      textIndex = 'TRASH_CASH_ITEMS';
+    end
+
+    str = str .. L['TRASH_CASH_TOTAL'] .. ':\t' .. TitanUtils_GetHighlightText(trashData.Count) .. ' ' .. L[textIndex] .. '\n';
+		str = str .. L['TRASH_CASH_AMOUNT'] .. ':\t' .. TitanTrashCash:FormatMoney(trashData.Amount, true) .. '\n';
+  else
+    str = L['TRASH_CASH_NO_TRASH'];
+  end
 
 	return str;
 end
@@ -88,10 +90,35 @@ function TitanTrashCash:BagUpdate(self, event, ...)
 end
 
 -- **************************************************************************
+-- NAME : TitanTrashCash:GetTrashData()
+-- DESC : Gets the trash money amount the and total count of trash items.
+-- **************************************************************************
+function TitanTrashCash:GetTrashData()
+
+  local data = {
+    Amount = 0,
+    Count = 0,
+  };
+
+  for bag = 0, 5 do
+    for slot = 1, GetContainerNumSlots(bag) do
+      local count, _, quality, _, _, _, _, _, itemID = select(2, GetContainerItemInfo(bag, slot));
+      if itemID ~= nil and quality == 0 then
+        local itemSellPrice = select(11, GetItemInfo(itemID));
+        data.Count = data.Count + 1;
+        data.Amount = data.Amount + (count * tonumber(itemSellPrice));
+      end
+    end
+  end
+
+  return data;
+end
+
+-- **************************************************************************
 -- NAME : TitanTrashCash:FormatMoney()
 -- DESC : Formats the given amount of money in copper in human readable format.
 -- **************************************************************************
-function TitanTrashCash:FormatMoney(amount)
+function TitanTrashCash:FormatMoney(amount, tooltip)
 
   local str = '';
   local showIcon = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowIcon');
@@ -105,7 +132,7 @@ function TitanTrashCash:FormatMoney(amount)
     Copper = '',
   };
 
-  if showIcon then
+  if showIcon or tooltip == true then
     tmpTable['Gold'] = tostring(gold) .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon', true);
     tmpTable['Silver'] = tostring(silver) .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon', true);
     tmpTable['Copper'] = tostring(copper) .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon', true);
@@ -115,13 +142,13 @@ function TitanTrashCash:FormatMoney(amount)
     tmpTable['Copper'] = tostring(copper) .. L['TITAN_GOLD_COPPER'];
   end
 
-  if showColoredText then
+  if showColoredText or tooltip == true then
     tmpTable['Gold'] = '|cFFFFFF00' .. tmpTable['Gold'] .. FONT_COLOR_CODE_CLOSE;
     tmpTable['Silver'] = '|cFFCCCCCC' .. tmpTable['Silver'] .. FONT_COLOR_CODE_CLOSE;
     tmpTable['Copper'] = '|cFFFF6600' .. tmpTable['Copper'] .. FONT_COLOR_CODE_CLOSE;
   end
 
-  if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowLabelText') then
+  if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowLabelText') and tooltip == false then
     str = L['TRASH_CASH_TRASH'] .. ': ';
   end
 

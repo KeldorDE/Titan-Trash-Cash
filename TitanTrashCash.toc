@@ -1,6 +1,6 @@
 ## Interface: 70300
 ## Title: Titan Panel [|cffeda55fTrash Cash|r] |cff00aa001.0.0.70300|r
-## Notes: Adds the functionality to Track an Farmed Item in the Titan Panel Bar.
+## Notes: Adds the functionality to show the amount and count of trash items from your bags in the Titan Panel Bar.
 ## Author: Keldor (https://www.devil-coding.de)
 ## SavedVariables: TitanTrashCashDB
 ## Dependencies: Titan
