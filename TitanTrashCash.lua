@@ -133,9 +133,9 @@ function TitanTrashCash:FormatMoney(amount, tooltip)
   };
 
   if showIcon or tooltip == true then
-    tmpTable['Gold'] = tostring(gold) .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon', true);
-    tmpTable['Silver'] = tostring(silver) .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon', true);
-    tmpTable['Copper'] = tostring(copper) .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon', true);
+    tmpTable['Gold'] = tostring(gold) .. " " .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon');
+    tmpTable['Silver'] = tostring(silver) .. " " .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon');
+    tmpTable['Copper'] = tostring(copper) .. " " .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon');
   else
     tmpTable['Gold'] = tostring(gold) .. L['TITAN_GOLD_GOLD'];
     tmpTable['Silver'] = tostring(silver) .. L['TITAN_GOLD_SILVER'];
@@ -186,11 +186,8 @@ end
 -- NAME : TitanTrashCash:GetIconString()
 -- DESC : Gets an icon string.
 -- **************************************************************************
-function TitanTrashCash:GetIconString(icon, space)
+function TitanTrashCash:GetIconString(icon)
   local fontSize = TitanPanelGetVar('FontSize');
-	local str = '|T' .. icon .. ':' .. fontSize .. '|t';
-	if space == true then
-		str = str .. ' ';
-	end
-	return str;
+  local str = '|T' .. icon .. ':' .. fontSize .. '|t';
+  return str;
 end
