@@ -105,7 +105,7 @@ function TitanTrashCash:GetTrashData()
       local count, _, quality, _, _, _, _, _, itemID = select(2, GetContainerItemInfo(bag, slot));
       if itemID ~= nil and quality == 0 then
         local itemSellPrice = select(11, GetItemInfo(itemID));
-        data.Count = data.Count + 1;
+        data.Count = data.Count + count;
         data.Amount = data.Amount + (count * tonumber(itemSellPrice));
       end
     end
