@@ -9,6 +9,7 @@ local ADDON_NAME = 'Titan Trash Cash';
 local L = LibStub('AceLocale-3.0'):GetLocale('Titan', true);
 local TitanTrashCash = LibStub('AceAddon-3.0'):NewAddon(TITAN_TRASH_CASH_ID, 'AceConsole-3.0', 'AceEvent-3.0');
 local ADDON_VERSION = GetAddOnMetadata('TitanTrashCash', 'Version');
+local TRASH_COLOR_HEX = '';
 
 function TitanTrashCash_OnLoad(self)
   self.registry = {
@@ -33,6 +34,7 @@ function TitanTrashCash_OnLoad(self)
 			ShowLabelText = true,
 			ShowColoredText = true,
 			DisplayOnRightSide = false,
+      ShowTopItem = true,
 		}
 	};
 end
@@ -43,6 +45,8 @@ end
 -- **************************************************************************
 function TitanTrashCash:OnInitialize()
 	self:RegisterEvent('BAG_UPDATE', 'BagUpdate');
+
+  TRASH_COLOR_HEX = select(4, GetItemQualityColor(0));
 end
 
 -- **************************************************************************
@@ -74,6 +78,11 @@ function TitanTrashCash_GetTooltipText()
 
     str = str .. L['TRASH_CASH_TOTAL'] .. ':\t' .. TitanUtils_GetHighlightText(trashData.Count) .. ' ' .. L[textIndex] .. '\n';
 		str = str .. L['TRASH_CASH_AMOUNT'] .. ':\t' .. TitanTrashCash:FormatMoney(trashData.Amount, true) .. '\n';
+
+    -- Show top item
+    if (TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowTopItem') == 1) then
+		  str = str .. L['TRASH_CASH_TOP_ITEM'] .. ':\t|c' .. TRASH_COLOR_HEX .. trashData.TopItem.Name .. FONT_COLOR_CODE_CLOSE .. ' (' .. TitanTrashCash:FormatMoney(trashData.TopItem.Amount, true) .. ')\n';
+    end
   else
     str = L['TRASH_CASH_NO_TRASH'];
   end
@@ -98,15 +107,25 @@ function TitanTrashCash:GetTrashData()
   local data = {
     Amount = 0,
     Count = 0,
+    TopItem = {
+      Name = '',
+      Amount = 0,
+    },
   };
 
   for bag = 0, 5 do
     for slot = 1, GetContainerNumSlots(bag) do
       local count, _, quality, _, _, _, _, _, itemID = select(2, GetContainerItemInfo(bag, slot));
       if itemID ~= nil and quality == 0 then
-        local itemSellPrice = select(11, GetItemInfo(itemID));
+        local itemName, _, _, _, _, _, _, _, _, _, _, itemSellPrice = GetItemInfo(itemID);
+        local itemTotalAmount = (count * tonumber(itemSellPrice));
         data.Count = data.Count + count;
-        data.Amount = data.Amount + (count * tonumber(itemSellPrice));
+        data.Amount = data.Amount + itemTotalAmount;
+
+        if (itemSellPrice > data.TopItem.Amount) then
+          data.TopItem.Name = itemName;
+          data.TopItem.Amount = itemSellPrice;
+        end
       end
     end
   end
@@ -133,9 +152,9 @@ function TitanTrashCash:FormatMoney(amount, tooltip)
   };
 
   if showIcon or tooltip == true then
-    tmpTable['Gold'] = tostring(gold) .. " " .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon');
-    tmpTable['Silver'] = tostring(silver) .. " " .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon');
-    tmpTable['Copper'] = tostring(copper) .. " " .. TitanTrashCash:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon');
+    tmpTable['Gold'] = tostring(gold) .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon');
+    tmpTable['Silver'] = tostring(silver) .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon');
+    tmpTable['Copper'] = tostring(copper) .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon');
   else
     tmpTable['Gold'] = tostring(gold) .. L['TITAN_GOLD_GOLD'];
     tmpTable['Silver'] = tostring(silver) .. L['TITAN_GOLD_SILVER'];
@@ -169,9 +188,18 @@ end
 -- **************************************************************************
 function TitanPanelRightClickMenu_PrepareTrashCashMenu(frame, level, menuList)
 
-	if level == 1 then
+  local info;
 
-		TitanPanelRightClickMenu_AddTitle(TitanPlugins[TITAN_TRASH_CASH_ID].menuText, level);
+	if (level == 1) then
+
+    TitanPanelRightClickMenu_AddTitle(TitanPlugins[TITAN_TRASH_CASH_ID].menuText, level);
+
+    info = {};
+    info.notCheckable = true;
+    info.text = L['TITAN_PANEL_OPTIONS'];
+    info.menuList = 'Options';
+    info.hasArrow = 1;
+    L_UIDropDownMenu_AddButton(info);
 
 		TitanPanelRightClickMenu_AddSpacer();
 		TitanPanelRightClickMenu_AddToggleIcon(TITAN_TRASH_CASH_ID);
@@ -179,7 +207,27 @@ function TitanPanelRightClickMenu_PrepareTrashCashMenu(frame, level, menuList)
 		TitanPanelRightClickMenu_AddToggleColoredText(TITAN_TRASH_CASH_ID);
 		TitanPanelRightClickMenu_AddSpacer();
 		TitanPanelRightClickMenu_AddCommand(L['TITAN_PANEL_MENU_HIDE'], TITAN_TRASH_CASH_ID, TITAN_PANEL_MENU_FUNC_HIDE);
-	end
+  elseif (level == 2) then
+    if (menuList == 'Options') then
+
+      TitanPanelRightClickMenu_AddTitle(L['TITAN_PANEL_OPTIONS'], level);
+
+      info = {};
+      info.text = L['TRASH_CASH_SHOW_TOP_ITEM'];
+      info.func = TitanTrashCash_ToggleShowTopItem;
+      info.checked = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowTopItem');
+      L_UIDropDownMenu_AddButton(info, level);
+    end
+  end
+end
+
+-- **************************************************************************
+-- NAME : TitanTrashCash_ToggleShowTopItem()
+-- DESC : Sets the show top item status.
+-- **************************************************************************
+function TitanTrashCash_ToggleShowTopItem()
+  TitanToggleVar(TITAN_TRASH_CASH_ID, 'ShowTopItem');
+  TitanPanelButton_UpdateButton(TITAN_TRASH_CASH_ID);
 end
 
 -- **************************************************************************

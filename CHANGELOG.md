@@ -1,5 +1,8 @@
 # Titan-Panel-Trash-Cash Changelog
 
+**1.0.3**
+* Feature: Show top item in tooltip
+
 **1.0.2**
 * Bugfix: Show correct item count in tooltip
 
