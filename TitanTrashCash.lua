@@ -81,7 +81,7 @@ function TitanTrashCash_GetTooltipText()
 
     -- Show top item
     if (TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowTopItem') == 1) then
-		  str = str .. L['TRASH_CASH_TOP_ITEM'] .. ':\t|c' .. TRASH_COLOR_HEX .. trashData.TopItem.Name .. FONT_COLOR_CODE_CLOSE .. ' (' .. TitanTrashCash:FormatMoney(trashData.TopItem.Amount, true) .. ')\n';
+		  str = str .. L['TRASH_CASH_TOP_ITEM'] .. ':\t|c' .. TRASH_COLOR_HEX .. trashData.TopItem.Name .. FONT_COLOR_CODE_CLOSE .. ' | ' .. TitanTrashCash:FormatMoney(trashData.TopItem.Amount, true) .. '\n';
     end
   else
     str = L['TRASH_CASH_NO_TRASH'];
@@ -115,10 +115,11 @@ function TitanTrashCash:GetTrashData()
 
   for bag = 0, 5 do
     for slot = 1, GetContainerNumSlots(bag) do
-      local count, _, quality, _, _, _, _, _, itemID = select(2, GetContainerItemInfo(bag, slot));
+      local _, count, _, quality, _, _, _, _, _, itemID = GetContainerItemInfo(bag, slot);
       if itemID ~= nil and quality == 0 then
-        local itemName, _, _, _, _, _, _, _, _, _, _, itemSellPrice = GetItemInfo(itemID);
+        local itemName, _, _, _, _, _, _, _, _, _, itemSellPrice = GetItemInfo(itemID);
         local itemTotalAmount = (count * tonumber(itemSellPrice));
+
         data.Count = data.Count + count;
         data.Amount = data.Amount + itemTotalAmount;
 
