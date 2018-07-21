@@ -1,5 +1,8 @@
 # Titan-Panel-Trash-Cash Changelog
 
+**1.0.5**
+* API update for patch 8.0
+
 **1.0.4**
 * Bugfix: Invalid item sell price detection
 
