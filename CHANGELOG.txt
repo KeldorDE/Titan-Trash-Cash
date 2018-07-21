@@ -1,19 +1,23 @@
-# Titan-Panel-Trash-Cash Changelog
-
-**1.0.5**
+1.0.5
+------------------
 * API update for patch 8.0
 
-**1.0.4**
+1.0.4
+------------------
 * Bugfix: Invalid item sell price detection
 
-**1.0.3**
+1.0.3
+------------------
 * Feature: Show top item in tooltip
 
-**1.0.2**
+1.0.2
+------------------
 * Bugfix: Show correct item count in tooltip
 
-**1.0.1**
+1.0.1
+------------------
 * Adjusted the gap between icon and amount
 
-**1.0.0**
+1.0.0
+------------------
 * First version
