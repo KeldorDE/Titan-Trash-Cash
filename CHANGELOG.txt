@@ -1,3 +1,8 @@
+1.0.9
+------------------
+- API update for patch 9.1.5
+- Fixed L_UIDropDownMenu_AddButton is nil error
+
 1.0.8
 ------------------
 - API update for patch 9.1

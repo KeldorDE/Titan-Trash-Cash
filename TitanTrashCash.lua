@@ -200,7 +200,7 @@ function TitanPanelRightClickMenu_PrepareTrashCashMenu(frame, level, menuList)
     info.text = L['TITAN_PANEL_OPTIONS'];
     info.menuList = 'Options';
     info.hasArrow = 1;
-    L_UIDropDownMenu_AddButton(info);
+    UIDropDownMenu_AddButton(info);
 
 		TitanPanelRightClickMenu_AddSpacer();
 		TitanPanelRightClickMenu_AddToggleIcon(TITAN_TRASH_CASH_ID);
@@ -217,7 +217,7 @@ function TitanPanelRightClickMenu_PrepareTrashCashMenu(frame, level, menuList)
       info.text = L['TRASH_CASH_SHOW_TOP_ITEM'];
       info.func = TitanTrashCash_ToggleShowTopItem;
       info.checked = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowTopItem');
-      L_UIDropDownMenu_AddButton(info, level);
+      UIDropDownMenu_AddButton(info, level);
     end
   end
 end
