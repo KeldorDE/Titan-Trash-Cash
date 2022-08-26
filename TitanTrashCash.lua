@@ -8,7 +8,6 @@ local TITAN_TRASH_CASH_ID = 'TrashCash';
 local ADDON_NAME = 'Titan Trash Cash';
 local L = LibStub('AceLocale-3.0'):GetLocale('Titan', true);
 local TitanTrashCash = LibStub('AceAddon-3.0'):NewAddon(TITAN_TRASH_CASH_ID, 'AceConsole-3.0', 'AceEvent-3.0');
-local ADDON_VERSION = GetAddOnMetadata('TitanTrashCash', 'Version');
 local TRASH_COLOR_HEX = '';
 
 function TitanTrashCash_OnLoad(self)
