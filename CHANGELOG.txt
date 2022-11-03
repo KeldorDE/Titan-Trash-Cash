@@ -1,3 +1,7 @@
+1.0.13
+------------------
+- API update for patch 10.0.0
+
 1.0.12
 ------------------
 - API update for patch 9.2.7
