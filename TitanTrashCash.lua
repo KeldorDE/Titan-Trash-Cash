@@ -112,14 +112,15 @@ function TitanTrashCash:GetTrashData()
     },
   };
 
-  for bag = 0, 5 do
-    for slot = 1, GetContainerNumSlots(bag) do
-      local _, count, _, quality, _, _, _, _, _, itemID = GetContainerItemInfo(bag, slot);
-      if itemID ~= nil and quality == 0 then
-        local itemName, _, _, _, _, _, _, _, _, _, itemSellPrice = GetItemInfo(itemID);
-        local itemTotalAmount = (count * tonumber(itemSellPrice));
+  for bag = BACKPACK_CONTAINER, NUM_TOTAL_EQUIPPED_BAG_SLOTS do
+    for slot = 1, C_Container.GetContainerNumSlots(bag) do
 
-        data.Count = data.Count + count;
+      local itemInfo = C_Container.GetContainerItemInfo(bag, slot);
+      if itemInfo ~= nil and itemInfo.quality == 0 then
+        local itemName, _, _, _, _, _, _, _, _, _, itemSellPrice = GetItemInfo(itemInfo.itemID);
+        local itemTotalAmount = (itemInfo.stackCount * tonumber(itemSellPrice));
+
+        data.Count = data.Count + itemInfo.stackCount;
         data.Amount = data.Amount + itemTotalAmount;
 
         if (itemSellPrice > data.TopItem.Amount) then
