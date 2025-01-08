@@ -1,5 +1,7 @@
 1.0.22
-- API update for patch 11
+------------------
+- API update for patch 11.0.7
+- Fix "attempt to index global InterfaceOptionsFrame" error
 
 1.0.21
 ------------------
