@@ -1,3 +1,9 @@
+1.1.0
+------------------
+- Add Classic support
+- Add Cataclysm Classic support
+- Update the code to detect the trash value
+
 1.0.23
 ------------------
 - API update for patch 11.0.7

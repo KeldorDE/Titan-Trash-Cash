@@ -112,20 +112,30 @@ function TitanTrashCash:GetTrashData()
     },
   };
 
-  for bag = BACKPACK_CONTAINER, NUM_TOTAL_EQUIPPED_BAG_SLOTS do
+  if NUM_TOTAL_EQUIPPED_BAG_SLOTS == nil then
+    MAX_BAGS = Constants.InventoryConstants.NumBagSlots
+  else
+    MAX_BAGS = NUM_TOTAL_EQUIPPED_BAG_SLOTS
+  end
+
+  for bag = 0, MAX_BAGS do -- 0 is the backpack, 1-4 are the equipped bags
+
     for slot = 1, C_Container.GetContainerNumSlots(bag) do
+      local itemLink = C_Container.GetContainerItemLink(bag, slot)
+      if itemLink then
+        local itemInfo = C_Container.GetContainerItemInfo(bag, slot)
+        local itemName, _, _, _, _, _, _, _, _, _, itemSellPrice = GetItemInfo(itemLink)
 
-      local itemInfo = C_Container.GetContainerItemInfo(bag, slot);
-      if itemInfo ~= nil and itemInfo.quality == 0 then
-        local itemName, _, _, _, _, _, _, _, _, _, itemSellPrice = GetItemInfo(itemInfo.itemID);
-        local itemTotalAmount = (itemInfo.stackCount * tonumber(itemSellPrice));
+        if itemInfo.quality == 0 then -- Check if the item's quality is "poor" (gray items)
+          local itemTotalAmount = (itemInfo.stackCount * tonumber(itemSellPrice))
 
-        data.Count = data.Count + itemInfo.stackCount;
-        data.Amount = data.Amount + itemTotalAmount;
+          data.Count = data.Count + itemInfo.stackCount
+          data.Amount = data.Amount + itemTotalAmount
 
-        if (itemSellPrice > data.TopItem.Amount) then
-          data.TopItem.Name = itemName;
-          data.TopItem.Amount = itemSellPrice;
+          if (itemSellPrice > data.TopItem.Amount) then
+            data.TopItem.Name = itemName
+            data.TopItem.Amount = itemSellPrice
+          end
         end
       end
     end
