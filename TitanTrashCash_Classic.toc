@@ -4,7 +4,7 @@
 ## Author: Keldor (https://www.devil-coding.de)
 ## SavedVariables: TitanTrashCashDB
 ## Dependencies: TitanClassic
-## Version: 1.1.0
+## Version: 1.1.1
 ## X-Child-Of: Titan
 
 embeds.xml
