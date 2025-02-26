@@ -1,10 +1,10 @@
-## Interface: 11506, 40401
-## Title: Titan Panel [|cffeda55fTrash Cash|r] |cff00aa001.1.0|r
+## Interface: 11506, 40402
+## Title: Titan Panel [|cffeda55fTrash Cash|r] |cff00aa001.1.2|r
 ## Notes: Adds the functionality to show the amount and count of trash items from your bags in the Titan Panel bar.|n|cffbbbbbbBy Keldor|r|n|nSupport:|n|cff82c5ff- patreon.com/eso_database_com|r|n|n
 ## Author: Keldor (https://www.devil-coding.de)
 ## SavedVariables: TitanTrashCashDB
 ## Dependencies: TitanClassic
-## Version: 1.1.1
+## Version: 1.1.2
 ## X-Child-Of: Titan
 
 embeds.xml
