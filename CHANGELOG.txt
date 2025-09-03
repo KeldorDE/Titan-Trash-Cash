@@ -1,3 +1,7 @@
+1.1.3
+------------------
+- API update for Patch 11.2, Ghosts of Karesh
+
 1.1.2
 ------------------
 - API update for Cataclysm classic
