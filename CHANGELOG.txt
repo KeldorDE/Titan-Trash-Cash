@@ -1,3 +1,11 @@
+1.1.6
+------------------
+- Version bump
+
+1.1.5
+------------------
+- API update for Patch 11.2.5
+
 1.1.4
 ------------------
 - Add russian translation by ZamestoTV
