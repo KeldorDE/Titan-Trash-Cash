@@ -226,20 +226,14 @@ function TitanTrashCash:FormatMoney(amount, tooltip)
         tmpTable['Copper'] = tostring(copper) .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon')
     else
         tmpTable['Gold'] = tostring(gold) .. L['TITAN_GOLD_GOLD']
-
-        if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowGoldOnly') and tooltip == false then
-            tmpTable['Silver'] = tostring(silver) .. L['TITAN_GOLD_SILVER']
-            tmpTable['Copper'] = tostring(copper) .. L['TITAN_GOLD_COPPER']
-        end
+        tmpTable['Silver'] = tostring(silver) .. L['TITAN_GOLD_SILVER']
+        tmpTable['Copper'] = tostring(copper) .. L['TITAN_GOLD_COPPER']
     end
 
     if showColoredText or tooltip == true then
         tmpTable['Gold'] = '|cFFFFFF00' .. tmpTable['Gold'] .. FONT_COLOR_CODE_CLOSE
-
-        if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowGoldOnly') and tooltip == false then
-            tmpTable['Silver'] = '|cFFCCCCCC' .. tmpTable['Silver'] .. FONT_COLOR_CODE_CLOSE
-            tmpTable['Copper'] = '|cFFFF6600' .. tmpTable['Copper'] .. FONT_COLOR_CODE_CLOSE
-        end
+        tmpTable['Silver'] = '|cFFCCCCCC' .. tmpTable['Silver'] .. FONT_COLOR_CODE_CLOSE
+        tmpTable['Copper'] = '|cFFFF6600' .. tmpTable['Copper'] .. FONT_COLOR_CODE_CLOSE
     end
 
     if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowLabelText') and tooltip == false then

@@ -1,3 +1,7 @@
+1.2.1
+------------------
+- Fix missing silver and copper values in the Titan button text when the icon and show gold only options are disabled
+
 1.2.0
 ------------------
 - Add option to show gold only
