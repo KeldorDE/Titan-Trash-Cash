@@ -45,6 +45,7 @@ function TitanTrashCash_OnLoad(self)
             ShowColoredText = true,
             DisplayOnRightSide = false,
             ShowTopItem = true,
+            ShowGoldOnly = false,
         }
     }
 end
@@ -225,28 +226,38 @@ function TitanTrashCash:FormatMoney(amount, tooltip)
         tmpTable['Copper'] = tostring(copper) .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon')
     else
         tmpTable['Gold'] = tostring(gold) .. L['TITAN_GOLD_GOLD']
-        tmpTable['Silver'] = tostring(silver) .. L['TITAN_GOLD_SILVER']
-        tmpTable['Copper'] = tostring(copper) .. L['TITAN_GOLD_COPPER']
+
+        if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowGoldOnly') and tooltip == false then
+            tmpTable['Silver'] = tostring(silver) .. L['TITAN_GOLD_SILVER']
+            tmpTable['Copper'] = tostring(copper) .. L['TITAN_GOLD_COPPER']
+        end
     end
 
     if showColoredText or tooltip == true then
         tmpTable['Gold'] = '|cFFFFFF00' .. tmpTable['Gold'] .. FONT_COLOR_CODE_CLOSE
-        tmpTable['Silver'] = '|cFFCCCCCC' .. tmpTable['Silver'] .. FONT_COLOR_CODE_CLOSE
-        tmpTable['Copper'] = '|cFFFF6600' .. tmpTable['Copper'] .. FONT_COLOR_CODE_CLOSE
+
+        if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowGoldOnly') and tooltip == false then
+            tmpTable['Silver'] = '|cFFCCCCCC' .. tmpTable['Silver'] .. FONT_COLOR_CODE_CLOSE
+            tmpTable['Copper'] = '|cFFFF6600' .. tmpTable['Copper'] .. FONT_COLOR_CODE_CLOSE
+        end
     end
 
     if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowLabelText') and tooltip == false then
         str = L['TRASH_CASH_TRASH'] .. ': '
     end
 
-    if gold > 0 then
-        str = str .. tmpTable['Gold'] .. ' '
-        str = str .. tmpTable['Silver'] .. ' '
-    elseif silver > 0 then
-        str = str .. tmpTable['Silver'] .. ' '
-    end
+    if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowGoldOnly') and tooltip == false then
+        str = str .. tmpTable['Gold']
+    else
+        if gold > 0 then
+            str = str .. tmpTable['Gold'] .. ' '
+            str = str .. tmpTable['Silver'] .. ' '
+        elseif silver > 0 then
+            str = str .. tmpTable['Silver'] .. ' '
+        end
 
-    str = str .. tmpTable['Copper']
+        str = str .. tmpTable['Copper']
+    end
 
     return str
 end
@@ -256,8 +267,6 @@ end
 -- DESC : Display right click menu options
 -- **************************************************************************
 function TitanPanelRightClickMenu_PrepareTrashCashMenu(_, level, menuList)
-
-    local info
 
     if level == 1 then
 
@@ -284,6 +293,11 @@ function TitanPanelRightClickMenu_PrepareTrashCashMenu(_, level, menuList)
                 func = TitanTrashCash_ToggleShowTopItem,
                 checked = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowTopItem'),
             }, level)
+            UIDropDownMenu_AddButton({
+                text = L['TRASH_CASH_SHOW_GOLD_ONLY'],
+                func = TitanTrashCash_ToggleShowGoldOnly,
+                checked = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowGoldOnly'),
+            }, level)
         end
     end
 end
@@ -294,6 +308,15 @@ end
 -- **************************************************************************
 function TitanTrashCash_ToggleShowTopItem()
     TitanToggleVar(TITAN_TRASH_CASH_ID, 'ShowTopItem')
+    TitanPanelButton_UpdateButton(TITAN_TRASH_CASH_ID)
+end
+
+-- **************************************************************************
+-- NAME : TitanTrashCash_ToggleShowGoldOnly()
+-- DESC : Sets the show gold only status.
+-- **************************************************************************
+function TitanTrashCash_ToggleShowGoldOnly()
+    TitanToggleVar(TITAN_TRASH_CASH_ID, 'ShowGoldOnly')
     TitanPanelButton_UpdateButton(TITAN_TRASH_CASH_ID)
 end
 

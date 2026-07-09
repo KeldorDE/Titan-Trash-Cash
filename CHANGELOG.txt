@@ -1,7 +1,11 @@
-1.1.11
+1.2.0
 ------------------
+- Add option to show gold only
+- Add French translation
+- Add Italian translation
+- Add Spanish translation
 - Improve performance by caching trash data and throttling bag scans
-- Only query item info for gray items to reduce API calls
+- Query item info only for gray items to reduce API calls
 - Re-scan on GET_ITEM_INFO_RECEIVED so freshly looted trash is counted correctly
 - Fix incorrect event handler signature and guard against missing sell prices
 

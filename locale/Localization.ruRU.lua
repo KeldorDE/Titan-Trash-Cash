@@ -1,5 +1,6 @@
 local L = LibStub('AceLocale-3.0'):NewLocale('Titan', 'ruRU', false)
 if not L then return end
+
 -- Translator ZamestoTV
 L = L or {}
 L["TRASH_CASH_AMOUNT"] = "Количество"
