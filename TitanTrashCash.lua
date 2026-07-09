@@ -175,7 +175,7 @@ function TitanTrashCash:GetTrashData()
         end
     end
 
-    for bag = 0, maxBags do -- 0 is the backpack, 1-4 are the equipped bags
+    for bag = 0, maxBags do
         for slot = 1, C_Container.GetContainerNumSlots(bag) do
             local itemInfo = C_Container.GetContainerItemInfo(bag, slot)
 
