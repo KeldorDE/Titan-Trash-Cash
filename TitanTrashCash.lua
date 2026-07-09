@@ -101,7 +101,7 @@ function TitanTrashCash_GetTooltipText()
         str = str .. L['TRASH_CASH_AMOUNT'] .. ':\t' .. TitanTrashCash:FormatMoney(trashData.Amount, true) .. '\n'
 
         -- Show top item
-        if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowTopItem') == 1 then
+        if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowTopItem') then
             str = str .. L['TRASH_CASH_TOP_ITEM'] .. ':\t|c' .. TRASH_COLOR_HEX .. trashData.TopItem.Name .. FONT_COLOR_CODE_CLOSE .. ' | ' .. TitanTrashCash:FormatMoney(trashData.TopItem.Amount, true) .. '\n'
         end
     else
