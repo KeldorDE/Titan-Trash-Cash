@@ -10,6 +10,17 @@ local L = LibStub('AceLocale-3.0'):GetLocale('Titan', true);
 local TitanTrashCash = LibStub('AceAddon-3.0'):NewAddon(TITAN_TRASH_CASH_ID, 'AceConsole-3.0', 'AceEvent-3.0');
 local TRASH_COLOR_HEX = '';
 
+-- Cache frequently used globals to avoid repeated global lookups in hot paths.
+local floor, abs, mod, tostring = math.floor, math.abs, mod, tostring;
+local C_Container = C_Container;
+local GetItemInfo = GetItemInfo;
+
+-- Throttling / caching state for bag scans.
+local UPDATE_THROTTLE = 0.1;
+local updatePending = false;
+local cachedTrashData = nil;
+local maxBags = nil;
+
 function TitanTrashCash_OnLoad(self)
   self.registry = {
 		id = TITAN_TRASH_CASH_ID,
@@ -44,8 +55,19 @@ end
 -- **************************************************************************
 function TitanTrashCash:OnInitialize()
 	self:RegisterEvent('BAG_UPDATE', 'BagUpdate');
+	self:RegisterEvent('GET_ITEM_INFO_RECEIVED', 'ItemInfoReceived');
 
   TRASH_COLOR_HEX = select(4, GetItemQualityColor(0));
+
+  -- Resolve the maximum bag index once instead of on every scan.
+  if NUM_TOTAL_EQUIPPED_BAG_SLOTS == nil then
+    maxBags = Constants.InventoryConstants.NumBagSlots;
+  else
+    maxBags = NUM_TOTAL_EQUIPPED_BAG_SLOTS;
+  end
+
+  -- Prime the cache so the first render has data available.
+  cachedTrashData = self:GetTrashData();
 end
 
 -- **************************************************************************
@@ -53,7 +75,7 @@ end
 -- DESC : Calculate the money amount of trash items.
 -- **************************************************************************
 function TitanTrashCash_GetButtonText(id)
-  local trashData = TitanTrashCash:GetTrashData();
+  local trashData = cachedTrashData or TitanTrashCash:GetTrashData();
   return TitanTrashCash:FormatMoney(trashData.Amount, false);
 end
 
@@ -63,7 +85,7 @@ end
 -- **************************************************************************
 function TitanTrashCash_GetTooltipText()
 
-  local trashData = TitanTrashCash:GetTrashData();
+  local trashData = cachedTrashData or TitanTrashCash:GetTrashData();
 	local str = '';
 
   if trashData.Count > 0 then
@@ -90,11 +112,43 @@ function TitanTrashCash_GetTooltipText()
 end
 
 -- **************************************************************************
+-- NAME : TitanTrashCash:ScheduleUpdate()
+-- DESC : Throttles bag scans. The triggering events (BAG_UPDATE,
+--        GET_ITEM_INFO_RECEIVED) can fire many times in quick succession,
+--        so the actual scan is coalesced into a single delayed call and the
+--        result is cached.
+-- **************************************************************************
+function TitanTrashCash:ScheduleUpdate()
+	if updatePending then
+		return;
+	end
+
+	updatePending = true;
+	C_Timer.After(UPDATE_THROTTLE, function()
+		updatePending = false;
+		cachedTrashData = TitanTrashCash:GetTrashData();
+		TitanPanelButton_UpdateButton(TITAN_TRASH_CASH_ID);
+	end);
+end
+
+-- **************************************************************************
 -- NAME : TitanTrashCash:BagUpdate()
 -- DESC : Parse events registered to plugin and act on them.
 -- **************************************************************************
-function TitanTrashCash:BagUpdate(self, event, ...)
-	TitanPanelButton_UpdateButton(TITAN_TRASH_CASH_ID);
+function TitanTrashCash:BagUpdate(event, ...)
+	self:ScheduleUpdate();
+end
+
+-- **************************************************************************
+-- NAME : TitanTrashCash:ItemInfoReceived()
+-- DESC : GetItemInfo returns nil for items that are not cached yet, so their
+--        sell price is missing on the first scan. When the client delivers
+--        the data, re-scan so freshly looted trash is counted correctly.
+-- **************************************************************************
+function TitanTrashCash:ItemInfoReceived(event, itemID, success)
+	if success then
+		self:ScheduleUpdate();
+	end
 end
 
 -- **************************************************************************
@@ -112,27 +166,30 @@ function TitanTrashCash:GetTrashData()
     },
   };
 
-  if NUM_TOTAL_EQUIPPED_BAG_SLOTS == nil then
-    MAX_BAGS = Constants.InventoryConstants.NumBagSlots
-  else
-    MAX_BAGS = NUM_TOTAL_EQUIPPED_BAG_SLOTS
+  if maxBags == nil then
+    if NUM_TOTAL_EQUIPPED_BAG_SLOTS == nil then
+      maxBags = Constants.InventoryConstants.NumBagSlots;
+    else
+      maxBags = NUM_TOTAL_EQUIPPED_BAG_SLOTS;
+    end
   end
 
-  for bag = 0, MAX_BAGS do -- 0 is the backpack, 1-4 are the equipped bags
+  for bag = 0, maxBags do -- 0 is the backpack, 1-4 are the equipped bags
 
     for slot = 1, C_Container.GetContainerNumSlots(bag) do
-      local itemLink = C_Container.GetContainerItemLink(bag, slot)
-      if itemLink then
-        local itemInfo = C_Container.GetContainerItemInfo(bag, slot)
-        local itemName, _, _, _, _, _, _, _, _, _, itemSellPrice = GetItemInfo(itemLink)
+      local itemInfo = C_Container.GetContainerItemInfo(bag, slot)
 
-        if itemInfo.quality == 0 then -- Check if the item's quality is "poor" (gray items)
-          local itemTotalAmount = (itemInfo.stackCount * tonumber(itemSellPrice))
+      if itemInfo and itemInfo.quality == 0 then -- Check if the item's quality is "poor" (gray items)
+        local itemName, _, _, _, _, _, _, _, _, _, itemSellPrice = GetItemInfo(itemInfo.hyperlink)
 
-          data.Count = data.Count + itemInfo.stackCount
+        if itemSellPrice and itemSellPrice > 0 then
+          local stackCount = itemInfo.stackCount or 1
+          local itemTotalAmount = stackCount * itemSellPrice
+
+          data.Count = data.Count + stackCount
           data.Amount = data.Amount + itemTotalAmount
 
-          if (itemSellPrice > data.TopItem.Amount) then
+          if itemSellPrice > data.TopItem.Amount then
             data.TopItem.Name = itemName
             data.TopItem.Amount = itemSellPrice
           end

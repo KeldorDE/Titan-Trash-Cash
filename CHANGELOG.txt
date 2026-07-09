@@ -1,3 +1,10 @@
+1.1.11
+------------------
+- Improve performance by caching trash data and throttling bag scans
+- Only query item info for gray items to reduce API calls
+- Re-scan on GET_ITEM_INFO_RECEIVED so freshly looted trash is counted correctly
+- Fix incorrect event handler signature and guard against missing sell prices
+
 1.1.10
 ------------------
 - Fix Version tag
