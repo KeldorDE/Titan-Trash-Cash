@@ -63,8 +63,8 @@ end
 ---Calculates the money amount of trash items.
 ---@return string text
 function TitanTrashCash:GetButtonText()
-    local trashData = cachedTrashData or TitanTrashCash:GetTrashData()
-    return TitanTrashCash:FormatMoney(trashData.Amount, false)
+    local trashData = cachedTrashData or self:GetTrashData()
+    return self:FormatMoney(trashData.Amount, false)
 end
 
 ---Displays the tooltip text.
@@ -115,7 +115,7 @@ function TitanTrashCash:ScheduleUpdate()
 
     C_Timer.After(UPDATE_THROTTLE, function()
         updatePending = false
-        cachedTrashData = TitanTrashCash:GetTrashData()
+        cachedTrashData = self:GetTrashData()
         TitanPanelButton_UpdateButton(TITAN_TRASH_CASH_ID)
     end)
 end
