@@ -10,11 +10,6 @@ local L = LibStub('AceLocale-3.0'):GetLocale('Titan', true)
 local TitanTrashCash = LibStub('AceAddon-3.0'):NewAddon(TITAN_TRASH_CASH_ID, 'AceConsole-3.0', 'AceEvent-3.0')
 local TRASH_COLOR_HEX = ''
 
--- Cache frequently used globals to avoid repeated global lookups in hot paths.
-local floor, abs, mod, tostring = math.floor, math.abs, mod, tostring
-local C_Container = C_Container
-local GetItemInfo = GetItemInfo
-
 -- Throttling / caching state for bag scans.
 local UPDATE_THROTTLE = 0.1
 local updatePending = false
@@ -27,9 +22,10 @@ function TitanTrashCash_OnLoad(self)
         category = 'Information',
         version = TITAN_VERSION,
         menuText = ADDON_NAME,
-        buttonTextFunction = 'TitanTrashCash_GetButtonText',
+        menuContextFunction = function(_, root) return TitanTrashCash:MenuGenerator(_, root) end,
+        buttonTextFunction = function() return TitanTrashCash:GetButtonText() end,
         tooltipTitle = ADDON_NAME,
-        tooltipTextFunction = 'TitanTrashCash_GetTooltipText',
+        tooltipTextFunction = function() return TitanTrashCash:GetTooltipText() end,
         icon = 'Interface\\AddOns\\TitanTrashCash\\TitanTrashCash',
         iconWidth = 0,
         controlVariables = {
@@ -55,27 +51,22 @@ end
 -- DESC : Is called by AceAddon when the addon is first loaded.
 -- **************************************************************************
 function TitanTrashCash:OnInitialize()
-	self:RegisterEvent('BAG_UPDATE', 'BagUpdate')
-	self:RegisterEvent('GET_ITEM_INFO_RECEIVED', 'ItemInfoReceived')
+    self:RegisterEvent('BAG_UPDATE', 'BagUpdate')
+    self:RegisterEvent('GET_ITEM_INFO_RECEIVED', 'ItemInfoReceived')
 
-    TRASH_COLOR_HEX = select(4, GetItemQualityColor(0))
+    TRASH_COLOR_HEX = select(4, C_Item.GetItemQualityColor(0))
 
-    -- Resolve the maximum bag index once instead of on every scan.
-    if NUM_TOTAL_EQUIPPED_BAG_SLOTS == nil then
-        maxBags = Constants.InventoryConstants.NumBagSlots
-    else
-        maxBags = NUM_TOTAL_EQUIPPED_BAG_SLOTS
-    end
+    maxBags = self:GetMaxBags()
 
     -- Prime the cache so the first render has data available.
     cachedTrashData = self:GetTrashData()
 end
 
 -- **************************************************************************
--- NAME : TitanTrashCash_GetButtonText()
+-- NAME : TitanTrashCash:GetButtonText()
 -- DESC : Calculate the money amount of trash items.
 -- **************************************************************************
-function TitanTrashCash_GetButtonText()
+function TitanTrashCash:GetButtonText()
     local trashData = cachedTrashData or TitanTrashCash:GetTrashData()
     return TitanTrashCash:FormatMoney(trashData.Amount, false)
 end
@@ -84,9 +75,9 @@ end
 -- NAME : TitanTrashCash:GetTooltipText()
 -- DESC : Display tooltip text.
 -- **************************************************************************
-function TitanTrashCash_GetTooltipText()
+function TitanTrashCash:GetTooltipText()
 
-    local trashData = cachedTrashData or TitanTrashCash:GetTrashData()
+    local trashData = cachedTrashData or self:GetTrashData()
     local str = ''
 
     if trashData.Count > 0 then
@@ -99,17 +90,30 @@ function TitanTrashCash_GetTooltipText()
         end
 
         str = str .. L['TRASH_CASH_TOTAL'] .. ':\t' .. TitanUtils_GetHighlightText(trashData.Count) .. ' ' .. L[textIndex] .. '\n'
-        str = str .. L['TRASH_CASH_AMOUNT'] .. ':\t' .. TitanTrashCash:FormatMoney(trashData.Amount, true) .. '\n'
+        str = str .. L['TRASH_CASH_AMOUNT'] .. ':\t' .. self:FormatMoney(trashData.Amount, true) .. '\n'
 
         -- Show top item
         if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowTopItem') then
-            str = str .. L['TRASH_CASH_TOP_ITEM'] .. ':\t|c' .. TRASH_COLOR_HEX .. trashData.TopItem.Name .. FONT_COLOR_CODE_CLOSE .. ' | ' .. TitanTrashCash:FormatMoney(trashData.TopItem.Amount, true) .. '\n'
+            str = str .. L['TRASH_CASH_TOP_ITEM'] .. ':\t|c' .. TRASH_COLOR_HEX .. trashData.TopItem.Name .. FONT_COLOR_CODE_CLOSE .. ' | ' .. self:FormatMoney(trashData.TopItem.Amount, true) .. '\n'
         end
     else
         str = L['TRASH_CASH_NO_TRASH']
     end
 
     return str
+end
+
+-- **************************************************************************
+-- NAME : TitanTrashCash:GetMaxBags()
+-- DESC : Get the maximum number of bags.
+-- **************************************************************************
+function TitanTrashCash:GetMaxBags()
+    -- Resolve the maximum bag index once instead of on every scan.
+    if NUM_TOTAL_EQUIPPED_BAG_SLOTS == nil then
+        return Constants.InventoryConstants.NumBagSlots
+    else
+        return NUM_TOTAL_EQUIPPED_BAG_SLOTS
+    end
 end
 
 -- **************************************************************************
@@ -148,9 +152,9 @@ end
 --        the data, re-scan so freshly looted trash is counted correctly.
 -- **************************************************************************
 function TitanTrashCash:ItemInfoReceived(_, _, success)
-	if success then
-		self:ScheduleUpdate()
-	end
+    if success then
+        self:ScheduleUpdate()
+    end
 end
 
 -- **************************************************************************
@@ -168,20 +172,12 @@ function TitanTrashCash:GetTrashData()
         },
     }
 
-    if maxBags == nil then
-        if NUM_TOTAL_EQUIPPED_BAG_SLOTS == nil then
-            maxBags = Constants.InventoryConstants.NumBagSlots
-        else
-            maxBags = NUM_TOTAL_EQUIPPED_BAG_SLOTS
-        end
-    end
-
     for bag = 0, maxBags do
         for slot = 1, C_Container.GetContainerNumSlots(bag) do
             local itemInfo = C_Container.GetContainerItemInfo(bag, slot)
 
             if itemInfo and itemInfo.quality == 0 then -- Check if the item's quality is "poor" (gray items)
-                local itemName, _, _, _, _, _, _, _, _, _, itemSellPrice = GetItemInfo(itemInfo.hyperlink)
+                local itemName, _, _, _, _, _, _, _, _, _, itemSellPrice = C_Item.GetItemInfo(itemInfo.hyperlink)
 
                 if itemSellPrice and itemSellPrice > 0 then
                     local stackCount = itemInfo.stackCount or 1
@@ -211,29 +207,29 @@ function TitanTrashCash:FormatMoney(amount, tooltip)
     local str = ''
     local showIcon = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowIcon')
     local showColoredText = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowColoredText')
-    local gold = floor(abs(amount / 10000))
-    local silver = floor(abs(mod(amount / 100, 100)))
-    local copper = floor(abs(mod(amount, 100)))
-    local tmpTable = {
+    local gold = math.floor(math.abs(amount / 10000))
+    local silver = math.floor(math.abs(mod(amount / 100, 100)))
+    local copper = math.floor(math.abs(mod(amount, 100)))
+    local amounts = {
         Gold = '',
         Silver = '',
         Copper = '',
     }
 
     if showIcon or tooltip == true then
-        tmpTable['Gold'] = tostring(gold) .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon')
-        tmpTable['Silver'] = tostring(silver) .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon')
-        tmpTable['Copper'] = tostring(copper) .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon')
+        amounts.Gold = gold .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon')
+        amounts.Silver = silver .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon')
+        amounts.Copper = copper .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon')
     else
-        tmpTable['Gold'] = tostring(gold) .. L['TITAN_GOLD_GOLD']
-        tmpTable['Silver'] = tostring(silver) .. L['TITAN_GOLD_SILVER']
-        tmpTable['Copper'] = tostring(copper) .. L['TITAN_GOLD_COPPER']
+        amounts.Gold = gold .. L['TITAN_GOLD_GOLD']
+        amounts.Silver = silver .. L['TITAN_GOLD_SILVER']
+        amounts.Copper = copper .. L['TITAN_GOLD_COPPER']
     end
 
     if showColoredText or tooltip == true then
-        tmpTable['Gold'] = '|cFFFFFF00' .. tmpTable['Gold'] .. FONT_COLOR_CODE_CLOSE
-        tmpTable['Silver'] = '|cFFCCCCCC' .. tmpTable['Silver'] .. FONT_COLOR_CODE_CLOSE
-        tmpTable['Copper'] = '|cFFFF6600' .. tmpTable['Copper'] .. FONT_COLOR_CODE_CLOSE
+        amounts.Gold = '|cFFFFFF00' .. amounts.Gold .. FONT_COLOR_CODE_CLOSE
+        amounts.Silver = '|cFFCCCCCC' .. amounts.Silver .. FONT_COLOR_CODE_CLOSE
+        amounts.Copper = '|cFFFF6600' .. amounts.Copper .. FONT_COLOR_CODE_CLOSE
     end
 
     if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowLabelText') and tooltip == false then
@@ -241,77 +237,34 @@ function TitanTrashCash:FormatMoney(amount, tooltip)
     end
 
     if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowGoldOnly') and tooltip == false then
-        str = str .. tmpTable['Gold']
+        str = str .. amounts.Gold
     else
         if gold > 0 then
-            str = str .. tmpTable['Gold'] .. ' '
-            str = str .. tmpTable['Silver'] .. ' '
+            str = str .. amounts.Gold .. ' '
+            str = str .. amounts.Silver .. ' '
         elseif silver > 0 then
-            str = str .. tmpTable['Silver'] .. ' '
+            str = str .. amounts.Silver .. ' '
         end
 
-        str = str .. tmpTable['Copper']
+        str = str .. amounts.Copper
     end
 
     return str
 end
 
 -- **************************************************************************
--- NAME : TitanPanelRightClickMenu_PrepareTrashCashMenu()
--- DESC : Display right click menu options
+-- NAME : TitanTrashCash:MenuGenerator()
+-- DESC : Builds the right click menu using the modern Titan_Menu (Blizzard_Menu)
+--        API. Titan automatically adds the title, the control variables and the
+--        hide command, so they are not added here.
 -- **************************************************************************
-function TitanPanelRightClickMenu_PrepareTrashCashMenu(_, level, menuList)
+function TitanTrashCash:MenuGenerator(_, root)
+    local id = TITAN_TRASH_CASH_ID
 
-    if level == 1 then
-
-        TitanPanelRightClickMenu_AddTitle(TitanPlugins[TITAN_TRASH_CASH_ID].menuText, level)
-        UIDropDownMenu_AddButton({
-            text = L['TITAN_PANEL_OPTIONS'],
-            menuList = 'Options',
-            notCheckable = true,
-            hasArrow = true,
-        })
-
-        TitanPanelRightClickMenu_AddSpacer()
-        TitanPanelRightClickMenu_AddToggleIcon(TITAN_TRASH_CASH_ID)
-        TitanPanelRightClickMenu_AddToggleLabelText(TITAN_TRASH_CASH_ID)
-        TitanPanelRightClickMenu_AddToggleColoredText(TITAN_TRASH_CASH_ID)
-        TitanPanelRightClickMenu_AddSpacer()
-        TitanPanelRightClickMenu_AddCommand(L['TITAN_PANEL_MENU_HIDE'], TITAN_TRASH_CASH_ID, TITAN_PANEL_MENU_FUNC_HIDE)
-    elseif level == 2 then
-        if menuList == 'Options' then
-
-            TitanPanelRightClickMenu_AddTitle(L['TITAN_PANEL_OPTIONS'], level)
-            UIDropDownMenu_AddButton({
-                text = L['TRASH_CASH_SHOW_TOP_ITEM'],
-                func = TitanTrashCash_ToggleShowTopItem,
-                checked = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowTopItem'),
-            }, level)
-            UIDropDownMenu_AddButton({
-                text = L['TRASH_CASH_SHOW_GOLD_ONLY'],
-                func = TitanTrashCash_ToggleShowGoldOnly,
-                checked = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowGoldOnly'),
-            }, level)
-        end
-    end
-end
-
--- **************************************************************************
--- NAME : TitanTrashCash_ToggleShowTopItem()
--- DESC : Sets the show top item status.
--- **************************************************************************
-function TitanTrashCash_ToggleShowTopItem()
-    TitanToggleVar(TITAN_TRASH_CASH_ID, 'ShowTopItem')
-    TitanPanelButton_UpdateButton(TITAN_TRASH_CASH_ID)
-end
-
--- **************************************************************************
--- NAME : TitanTrashCash_ToggleShowGoldOnly()
--- DESC : Sets the show gold only status.
--- **************************************************************************
-function TitanTrashCash_ToggleShowGoldOnly()
-    TitanToggleVar(TITAN_TRASH_CASH_ID, 'ShowGoldOnly')
-    TitanPanelButton_UpdateButton(TITAN_TRASH_CASH_ID)
+    -- Options
+    local options = Titan_Menu.AddButton(root, L['TITAN_PANEL_OPTIONS'])
+    Titan_Menu.AddSelector(options, id, L['TRASH_CASH_SHOW_TOP_ITEM'], 'ShowTopItem')
+    Titan_Menu.AddSelector(options, id, L['TRASH_CASH_SHOW_GOLD_ONLY'], 'ShowGoldOnly')
 end
 
 -- **************************************************************************
