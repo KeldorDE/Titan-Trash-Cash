@@ -20,7 +20,12 @@ ignore:
   - CHANGES.txt
   - CHANGELOG.txt
   - scripts
+  - .editorconfig
+  - .gitattributes
+  - .gitignore
+  - .idea
   - .github
+  - assets
 
 required-dependencies:
   - titan-panel
