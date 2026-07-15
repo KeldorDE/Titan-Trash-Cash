@@ -55,7 +55,6 @@ function TitanTrashCash:OnInitialize()
     self:RegisterEvent('GET_ITEM_INFO_RECEIVED', 'ItemInfoReceived')
 
     TRASH_COLOR_HEX = select(4, C_Item.GetItemQualityColor(0))
-
     maxBags = self:GetMaxBags()
 
     -- Prime the cache so the first render has data available.
@@ -108,12 +107,7 @@ end
 -- DESC : Get the maximum number of bags.
 -- **************************************************************************
 function TitanTrashCash:GetMaxBags()
-    -- Resolve the maximum bag index once instead of on every scan.
-    if NUM_TOTAL_EQUIPPED_BAG_SLOTS == nil then
-        return Constants.InventoryConstants.NumBagSlots
-    else
-        return NUM_TOTAL_EQUIPPED_BAG_SLOTS
-    end
+    return NUM_TOTAL_EQUIPPED_BAG_SLOTS or Constants.InventoryConstants.NumBagSlots
 end
 
 -- **************************************************************************
@@ -261,7 +255,6 @@ end
 function TitanTrashCash:MenuGenerator(_, root)
     local id = TITAN_TRASH_CASH_ID
 
-    -- Options
     local options = Titan_Menu.AddButton(root, L['TITAN_PANEL_OPTIONS'])
     Titan_Menu.AddSelector(options, id, L['TRASH_CASH_SHOW_TOP_ITEM'], 'ShowTopItem')
     Titan_Menu.AddSelector(options, id, L['TRASH_CASH_SHOW_GOLD_ONLY'], 'ShowGoldOnly')
@@ -273,6 +266,5 @@ end
 -- **************************************************************************
 function TitanTrashCash:GetIconString(icon)
     local fontSize = TitanPanelGetVar('FontSize')
-    local str = '|T' .. icon .. ':' .. fontSize .. '|t'
-    return str
+    return '|T' .. icon .. ':' .. fontSize .. '|t'
 end
