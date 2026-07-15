@@ -16,6 +16,8 @@ local updatePending = false
 local cachedTrashData
 local maxBags
 
+---Registers the plugin upon it loading.
+---@param self Button The Titan plugin button.
 function TitanTrashCash_OnLoad(self)
     self.registry = {
         id = TITAN_TRASH_CASH_ID,
@@ -46,10 +48,7 @@ function TitanTrashCash_OnLoad(self)
     }
 end
 
--- **************************************************************************
--- NAME : TitanTrashCash:OnInitialize()
--- DESC : Is called by AceAddon when the addon is first loaded.
--- **************************************************************************
+---Is called by AceAddon when the addon is first loaded.
 function TitanTrashCash:OnInitialize()
     self:RegisterEvent('BAG_UPDATE', 'BagUpdate')
     self:RegisterEvent('GET_ITEM_INFO_RECEIVED', 'ItemInfoReceived')
@@ -61,19 +60,15 @@ function TitanTrashCash:OnInitialize()
     cachedTrashData = self:GetTrashData()
 end
 
--- **************************************************************************
--- NAME : TitanTrashCash:GetButtonText()
--- DESC : Calculate the money amount of trash items.
--- **************************************************************************
+---Calculates the money amount of trash items.
+---@return string text
 function TitanTrashCash:GetButtonText()
     local trashData = cachedTrashData or TitanTrashCash:GetTrashData()
     return TitanTrashCash:FormatMoney(trashData.Amount, false)
 end
 
--- **************************************************************************
--- NAME : TitanTrashCash:GetTooltipText()
--- DESC : Display tooltip text.
--- **************************************************************************
+---Displays the tooltip text.
+---@return string text
 function TitanTrashCash:GetTooltipText()
 
     local trashData = cachedTrashData or self:GetTrashData()
@@ -102,21 +97,15 @@ function TitanTrashCash:GetTooltipText()
     return str
 end
 
--- **************************************************************************
--- NAME : TitanTrashCash:GetMaxBags()
--- DESC : Get the maximum number of bags.
--- **************************************************************************
+---Gets the maximum number of bags.
+---@return number maxBags
 function TitanTrashCash:GetMaxBags()
     return NUM_TOTAL_EQUIPPED_BAG_SLOTS or Constants.InventoryConstants.NumBagSlots
 end
 
--- **************************************************************************
--- NAME : TitanTrashCash:ScheduleUpdate()
--- DESC : Throttles bag scans. The triggering events (BAG_UPDATE,
---        GET_ITEM_INFO_RECEIVED) can fire many times in quick succession,
---        so the actual scan is coalesced into a single delayed call and the
---        result is cached.
--- **************************************************************************
+---Throttles bag scans. The triggering events (BAG_UPDATE, GET_ITEM_INFO_RECEIVED)
+---can fire many times in quick succession, so the actual scan is coalesced into a
+---single delayed call and the result is cached.
 function TitanTrashCash:ScheduleUpdate()
     if updatePending then
         return
@@ -131,30 +120,23 @@ function TitanTrashCash:ScheduleUpdate()
     end)
 end
 
--- **************************************************************************
--- NAME : TitanTrashCash:BagUpdate()
--- DESC : Parse events registered to plugin and act on them.
--- **************************************************************************
+---Parses events registered to the plugin and acts on them.
 function TitanTrashCash:BagUpdate()
     self:ScheduleUpdate()
 end
 
--- **************************************************************************
--- NAME : TitanTrashCash:ItemInfoReceived()
--- DESC : GetItemInfo returns nil for items that are not cached yet, so their
---        sell price is missing on the first scan. When the client delivers
---        the data, re-scan so freshly looted trash is counted correctly.
--- **************************************************************************
+---GetItemInfo returns nil for items that are not cached yet, so their sell price is
+---missing on the first scan. When the client delivers the data, re-scan so freshly
+---looted trash is counted correctly.
+---@param success boolean Whether the item info was successfully retrieved.
 function TitanTrashCash:ItemInfoReceived(_, _, success)
     if success then
         self:ScheduleUpdate()
     end
 end
 
--- **************************************************************************
--- NAME : TitanTrashCash:GetTrashData()
--- DESC : Gets the trash money amount the and total count of trash items.
--- **************************************************************************
+---Gets the trash money amount and the total count of trash items.
+---@return table data The trash data with Amount, Count and TopItem fields.
 function TitanTrashCash:GetTrashData()
 
     local data = {
@@ -192,10 +174,10 @@ function TitanTrashCash:GetTrashData()
     return data
 end
 
--- **************************************************************************
--- NAME : TitanTrashCash:FormatMoney()
--- DESC : Formats the given amount of money in copper in human readable format.
--- **************************************************************************
+---Formats the given amount of money in copper in human readable format.
+---@param amount number The money amount in copper.
+---@param tooltip boolean Whether the string is rendered in the tooltip.
+---@return string text
 function TitanTrashCash:FormatMoney(amount, tooltip)
 
     local str = ''
@@ -246,12 +228,10 @@ function TitanTrashCash:FormatMoney(amount, tooltip)
     return str
 end
 
--- **************************************************************************
--- NAME : TitanTrashCash:MenuGenerator()
--- DESC : Builds the right click menu using the modern Titan_Menu (Blizzard_Menu)
---        API. Titan automatically adds the title, the control variables and the
---        hide command, so they are not added here.
--- **************************************************************************
+---Builds the right click menu using the modern Titan_Menu (Blizzard_Menu) API.
+---Titan automatically adds the title, the control variables and the hide
+---command, so they are not added here.
+---@param root table The Titan_Menu root node.
 function TitanTrashCash:MenuGenerator(_, root)
     local id = TITAN_TRASH_CASH_ID
 
@@ -260,10 +240,9 @@ function TitanTrashCash:MenuGenerator(_, root)
     Titan_Menu.AddSelector(options, id, L['TRASH_CASH_SHOW_GOLD_ONLY'], 'ShowGoldOnly')
 end
 
--- **************************************************************************
--- NAME : TitanTrashCash:GetIconString()
--- DESC : Gets an icon string.
--- **************************************************************************
+---Gets an icon string.
+---@param icon string The icon file path.
+---@return string text
 function TitanTrashCash:GetIconString(icon)
     local fontSize = TitanPanelGetVar('FontSize')
     return '|T' .. icon .. ':' .. fontSize .. '|t'
