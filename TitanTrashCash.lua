@@ -7,7 +7,7 @@
 local TITAN_TRASH_CASH_ID = 'TrashCash'
 local ADDON_NAME = 'Titan Trash Cash'
 local L = LibStub('AceLocale-3.0'):GetLocale('Titan', true)
-local TitanTrashCash = LibStub('AceAddon-3.0'):NewAddon(TITAN_TRASH_CASH_ID, 'AceConsole-3.0', 'AceEvent-3.0')
+local TitanTrashCash = LibStub('AceAddon-3.0'):NewAddon(TITAN_TRASH_CASH_ID, 'AceEvent-3.0')
 local TRASH_COLOR_HEX = ''
 
 -- Throttling / caching state for bag scans.
@@ -184,8 +184,8 @@ function TitanTrashCash:FormatMoney(amount, tooltip)
     local showIcon = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowIcon')
     local showColoredText = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowColoredText')
     local gold = math.floor(math.abs(amount / 10000))
-    local silver = math.floor(math.abs(mod(amount / 100, 100)))
-    local copper = math.floor(math.abs(mod(amount, 100)))
+    local silver = math.floor(math.abs((amount / 100) % 100))
+    local copper = math.floor(math.abs(amount % 100))
     local amounts = {
         Gold = '',
         Silver = '',

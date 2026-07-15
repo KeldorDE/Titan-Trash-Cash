@@ -1,6 +1,9 @@
 1.2.2
 ------------------
 - Implemented modern menu generation for right-click options
+- Removed unused AceConfig
+- Removed unused AceConsole
+- Removed unused AceHook
 
 1.2.1
 ------------------
