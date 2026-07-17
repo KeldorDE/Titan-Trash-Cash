@@ -193,9 +193,9 @@ function TitanTrashCash:FormatMoney(amount, tooltip)
     }
 
     if showIcon or tooltip then
-        amounts.Gold = gold .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon')
-        amounts.Silver = silver .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon')
-        amounts.Copper = copper .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon')
+        amounts.Gold = gold .. ' ' .. self:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon')
+        amounts.Silver = silver .. ' ' .. self:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon')
+        amounts.Copper = copper .. ' ' .. self:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon')
     else
         amounts.Gold = gold .. L['TITAN_GOLD_GOLD']
         amounts.Silver = silver .. L['TITAN_GOLD_SILVER']
