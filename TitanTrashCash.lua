@@ -192,7 +192,7 @@ function TitanTrashCash:FormatMoney(amount, tooltip)
         Copper = '',
     }
 
-    if showIcon or tooltip == true then
+    if showIcon or tooltip then
         amounts.Gold = gold .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon')
         amounts.Silver = silver .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon')
         amounts.Copper = copper .. " " .. self:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon')
@@ -202,17 +202,17 @@ function TitanTrashCash:FormatMoney(amount, tooltip)
         amounts.Copper = copper .. L['TITAN_GOLD_COPPER']
     end
 
-    if showColoredText or tooltip == true then
+    if showColoredText or tooltip then
         amounts.Gold = '|cFFFFFF00' .. amounts.Gold .. FONT_COLOR_CODE_CLOSE
         amounts.Silver = '|cFFCCCCCC' .. amounts.Silver .. FONT_COLOR_CODE_CLOSE
         amounts.Copper = '|cFFFF6600' .. amounts.Copper .. FONT_COLOR_CODE_CLOSE
     end
 
-    if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowLabelText') and tooltip == false then
+    if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowLabelText') and not tooltip then
         str = L['TRASH_CASH_TRASH'] .. ': '
     end
 
-    if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowGoldOnly') and tooltip == false then
+    if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowGoldOnly') and not tooltip then
         str = str .. amounts.Gold
     else
         if gold > 0 then

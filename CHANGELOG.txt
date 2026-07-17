@@ -1,3 +1,7 @@
+1.2.3
+------------------
+- Optimized code conditionals
+
 1.2.2
 ------------------
 - Implemented modern menu generation for right-click options
