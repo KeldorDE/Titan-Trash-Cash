@@ -44,7 +44,7 @@ function TitanTrashCash_OnLoad(self)
             DisplayOnRightSide = false,
             ShowTopItem = true,
             ShowGoldOnly = false,
-        }
+        },
     }
 end
 
@@ -70,12 +70,10 @@ end
 ---Displays the tooltip text.
 ---@return string text
 function TitanTrashCash:GetTooltipText()
-
     local trashData = cachedTrashData or self:GetTrashData()
     local str = ''
 
     if trashData.Count > 0 then
-
         local textIndex = ''
         if trashData.Count == 1 then
             textIndex = 'TRASH_CASH_ITEM'
@@ -86,7 +84,6 @@ function TitanTrashCash:GetTooltipText()
         str = str .. L['TRASH_CASH_TOTAL'] .. ':\t' .. TitanUtils_GetHighlightText(trashData.Count) .. ' ' .. L[textIndex] .. '\n'
         str = str .. L['TRASH_CASH_AMOUNT'] .. ':\t' .. self:FormatMoney(trashData.Amount, true) .. '\n'
 
-        -- Show top item
         if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowTopItem') then
             str = str .. L['TRASH_CASH_TOP_ITEM'] .. ':\t|c' .. TRASH_COLOR_HEX .. trashData.TopItem.Name .. FONT_COLOR_CODE_CLOSE .. ' | ' .. self:FormatMoney(trashData.TopItem.Amount, true) .. '\n'
         end
@@ -138,7 +135,6 @@ end
 ---Gets the trash money amount and the total count of trash items.
 ---@return table data The trash data with Amount, Count and TopItem fields.
 function TitanTrashCash:GetTrashData()
-
     local data = {
         Amount = 0,
         Count = 0,
@@ -179,7 +175,6 @@ end
 ---@param tooltip boolean Whether the string is rendered in the tooltip.
 ---@return string text
 function TitanTrashCash:FormatMoney(amount, tooltip)
-
     local str = ''
     local showIcon = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowIcon')
     local showColoredText = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowColoredText')
