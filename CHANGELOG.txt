@@ -1,3 +1,9 @@
+1.2.4
+------------------
+- Fixed outdated API version for Classic version
+- Fixed missing AddOn icon in AddOn overview menu
+- Fixed missing Titan Panel Category assignment in AddOn overview menu
+
 1.2.3
 ------------------
 - Optimized code conditionals
