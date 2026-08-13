@@ -21,6 +21,7 @@ ignore:
   - .gitattributes
   - .gitignore
   - .idea
+  - .vscode
   - .github
   - assets
 
