@@ -1,3 +1,7 @@
+1.2.6
+------------------
+- Removed development files from release
+
 1.2.5
 ------------------
 - Updated API to Patch 12.1.0
