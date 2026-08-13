@@ -1,3 +1,8 @@
+1.2.5
+------------------
+- Updated API to Patch 12.1.0
+- Fixed an invalid type conversion for the total amount
+
 1.2.4
 ------------------
 - Fixed outdated API version for Classic version

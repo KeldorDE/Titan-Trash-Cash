@@ -17,7 +17,7 @@ local cachedTrashData
 local maxBags
 
 ---Registers the plugin upon it loading.
----@param self Button The Titan plugin button.
+---@param self any The Titan plugin button.
 function TitanTrashCash_OnLoad(self)
     self.registry = {
         id = TITAN_TRASH_CASH_ID,
@@ -156,7 +156,7 @@ function TitanTrashCash:GetTrashData()
                     local itemTotalAmount = stackCount * itemSellPrice
 
                     data.Count = data.Count + stackCount
-                    data.Amount = data.Amount + itemTotalAmount
+                    data.Amount = tonumber(data.Amount + itemTotalAmount)
 
                     if itemSellPrice > data.TopItem.Amount then
                         data.TopItem.Name = itemName
