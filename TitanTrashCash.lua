@@ -4,14 +4,11 @@
 -- * By: Keldor
 -- **************************************************************************
 
-local TITAN_TRASH_CASH_ID = 'TrashCash'
-local ADDON_NAME = 'Titan Trash Cash'
-local L = LibStub('AceLocale-3.0'):GetLocale('Titan', true)
+---@class TitanTrashCash : AceConsole, AceEvent, AceHook, AceTimer
 local TitanTrashCash = LibStub('AceAddon-3.0'):NewAddon(TITAN_TRASH_CASH_ID, 'AceEvent-3.0')
-local TRASH_COLOR_HEX = ''
+local L = LibStub('AceLocale-3.0'):GetLocale('Titan', true)
 
 -- Throttling / caching state for bag scans.
-local UPDATE_THROTTLE = 0.1
 local updatePending = false
 local cachedTrashData
 local maxBags
@@ -21,6 +18,7 @@ local maxBags
 function TitanTrashCash_OnLoad(self)
     self.registry = {
         id = TITAN_TRASH_CASH_ID,
+        name = ADDON_NAME,
         category = 'Information',
         version = TITAN_VERSION,
         menuText = ADDON_NAME,
@@ -53,7 +51,6 @@ function TitanTrashCash:OnInitialize()
     self:RegisterEvent('BAG_UPDATE', 'BagUpdate')
     self:RegisterEvent('GET_ITEM_INFO_RECEIVED', 'ItemInfoReceived')
 
-    TRASH_COLOR_HEX = select(4, C_Item.GetItemQualityColor(0))
     maxBags = self:GetMaxBags()
 
     -- Prime the cache so the first render has data available.
@@ -76,19 +73,19 @@ function TitanTrashCash:GetTooltipText()
     if trashData.Count > 0 then
         local textIndex = ''
         if trashData.Count == 1 then
-            textIndex = 'TRASH_CASH_ITEM'
+            textIndex = 'TITAN_TRASH_CASH_ITEM'
         else
-            textIndex = 'TRASH_CASH_ITEMS'
+            textIndex = 'TITAN_TRASH_CASH_ITEMS'
         end
 
-        str = str .. L['TRASH_CASH_TOTAL'] .. ':\t' .. TitanUtils_GetHighlightText(trashData.Count) .. ' ' .. L[textIndex] .. '\n'
-        str = str .. L['TRASH_CASH_AMOUNT'] .. ':\t' .. self:FormatMoney(trashData.Amount, true) .. '\n'
+        str = str .. L['TITAN_TRASH_CASH_TOTAL'] .. ':\t' .. TitanUtils_GetHighlightText(trashData.Count) .. ' ' .. L[textIndex] .. '\n'
+        str = str .. L['TITAN_TRASH_CASH_AMOUNT'] .. ':\t' .. self:FormatMoney(trashData.Amount, true) .. '\n'
 
         if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowTopItem') then
-            str = str .. L['TRASH_CASH_TOP_ITEM'] .. ':\t|c' .. TRASH_COLOR_HEX .. trashData.TopItem.Name .. FONT_COLOR_CODE_CLOSE .. ' | ' .. self:FormatMoney(trashData.TopItem.Amount, true) .. '\n'
+            str = str .. L['TITAN_TRASH_CASH_TOP_ITEM'] .. ':\t|c' .. TRASH_COLOR_HEX .. trashData.TopItem.Name .. FONT_COLOR_CODE_CLOSE .. ' | ' .. self:FormatMoney(trashData.TopItem.Amount, true) .. '\n'
         end
     else
-        str = L['TRASH_CASH_NO_TRASH']
+        str = L['TITAN_TRASH_CASH_NO_TRASH']
     end
 
     return str
@@ -204,7 +201,7 @@ function TitanTrashCash:FormatMoney(amount, tooltip)
     end
 
     if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowLabelText') and not tooltip then
-        str = L['TRASH_CASH_TRASH'] .. ': '
+        str = L['TITAN_TRASH_CASH_TRASH'] .. ': '
     end
 
     if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowGoldOnly') and not tooltip then
@@ -228,11 +225,9 @@ end
 ---command, so they are not added here.
 ---@param root table The Titan_Menu root node.
 function TitanTrashCash:MenuGenerator(_, root)
-    local id = TITAN_TRASH_CASH_ID
-
     local options = Titan_Menu.AddButton(root, L['TITAN_PANEL_OPTIONS'])
-    Titan_Menu.AddSelector(options, id, L['TRASH_CASH_SHOW_TOP_ITEM'], 'ShowTopItem')
-    Titan_Menu.AddSelector(options, id, L['TRASH_CASH_SHOW_GOLD_ONLY'], 'ShowGoldOnly')
+    Titan_Menu.AddSelector(options, TITAN_TRASH_CASH_ID, L['TITAN_TRASH_CASH_SHOW_TOP_ITEM'], 'ShowTopItem')
+    Titan_Menu.AddSelector(options, TITAN_TRASH_CASH_ID, L['TITAN_TRASH_CASH_SHOW_GOLD_ONLY'], 'ShowGoldOnly')
 end
 
 ---Gets an icon string.

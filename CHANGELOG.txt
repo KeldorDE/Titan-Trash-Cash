@@ -1,3 +1,7 @@
+1.2.7
+------------------
+- Optimized different parts of the code
+
 1.2.6
 ------------------
 - Removed development files from release

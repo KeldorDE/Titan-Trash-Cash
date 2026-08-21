@@ -24,6 +24,7 @@ ignore:
   - .vscode
   - .github
   - assets
+  - Annotations
 
 required-dependencies:
   - titan-panel
