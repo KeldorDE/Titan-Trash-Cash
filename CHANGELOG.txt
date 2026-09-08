@@ -1,3 +1,8 @@
+1.2.8
+------------------
+- Fixed wrong addon name display
+- Optimized different parts of the code
+
 1.2.7
 ------------------
 - Optimized different parts of the code

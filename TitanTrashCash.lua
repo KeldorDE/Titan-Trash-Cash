@@ -8,23 +8,39 @@
 local TitanTrashCash = LibStub('AceAddon-3.0'):NewAddon(TITAN_TRASH_CASH_ID, 'AceEvent-3.0')
 local L = LibStub('AceLocale-3.0'):GetLocale('Titan', true)
 
+-- Upvalues for the bag scan hot path.
+local GetContainerNumSlots = C_Container.GetContainerNumSlots
+local GetContainerItemInfo = C_Container.GetContainerItemInfo
+local GetItemInfo = C_Item.GetItemInfo
+local floor = math.floor
+local QUALITY_POOR = Enum.ItemQuality and Enum.ItemQuality.Poor or 0
+
 -- Throttling / caching state for bag scans.
 local updatePending = false
-local cachedTrashData
 local maxBags
+
+-- Reused across scans to avoid allocating a new table on every update.
+local trashData = {
+    Amount = 0,
+    Count = 0,
+    TopItem = {
+        Name = '',
+        Amount = 0,
+    },
+}
 
 ---Registers the plugin upon it loading.
 ---@param self any The Titan plugin button.
 function TitanTrashCash_OnLoad(self)
     self.registry = {
         id = TITAN_TRASH_CASH_ID,
-        name = ADDON_NAME,
+        name = TITAN_TRASH_CASH_ADDON_NAME,
         category = 'Information',
         version = TITAN_VERSION,
-        menuText = ADDON_NAME,
+        menuText = TITAN_TRASH_CASH_ADDON_NAME,
         menuContextFunction = function(_, root) return TitanTrashCash:MenuGenerator(_, root) end,
         buttonTextFunction = function() return TitanTrashCash:GetButtonText() end,
-        tooltipTitle = ADDON_NAME,
+        tooltipTitle = TITAN_TRASH_CASH_ADDON_NAME,
         tooltipTextFunction = function() return TitanTrashCash:GetTooltipText() end,
         icon = 'Interface\\AddOns\\TitanTrashCash\\TitanTrashCash',
         iconWidth = 0,
@@ -48,26 +64,24 @@ end
 
 ---Is called by AceAddon when the addon is first loaded.
 function TitanTrashCash:OnInitialize()
-    self:RegisterEvent('BAG_UPDATE', 'BagUpdate')
+    self:RegisterEvent('BAG_UPDATE', 'ScheduleUpdate')
     self:RegisterEvent('GET_ITEM_INFO_RECEIVED', 'ItemInfoReceived')
 
     maxBags = self:GetMaxBags()
 
     -- Prime the cache so the first render has data available.
-    cachedTrashData = self:GetTrashData()
+    self:UpdateTrashData()
 end
 
 ---Calculates the money amount of trash items.
 ---@return string text
 function TitanTrashCash:GetButtonText()
-    local trashData = cachedTrashData or self:GetTrashData()
     return self:FormatMoney(trashData.Amount, false)
 end
 
 ---Displays the tooltip text.
 ---@return string text
 function TitanTrashCash:GetTooltipText()
-    local trashData = cachedTrashData or self:GetTrashData()
     local str = ''
 
     if trashData.Count > 0 then
@@ -78,11 +92,11 @@ function TitanTrashCash:GetTooltipText()
             textIndex = 'TITAN_TRASH_CASH_ITEMS'
         end
 
-        str = str .. L['TITAN_TRASH_CASH_TOTAL'] .. ':\t' .. TitanUtils_GetHighlightText(trashData.Count) .. ' ' .. L[textIndex] .. '\n'
+        str = str .. L['TITAN_TRASH_CASH_TOTAL'] .. ':\t' .. TitanUtils_GetHighlightText(tostring(trashData.Count)) .. ' ' .. L[textIndex] .. '\n'
         str = str .. L['TITAN_TRASH_CASH_AMOUNT'] .. ':\t' .. self:FormatMoney(trashData.Amount, true) .. '\n'
 
         if TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowTopItem') then
-            str = str .. L['TITAN_TRASH_CASH_TOP_ITEM'] .. ':\t|c' .. TRASH_COLOR_HEX .. trashData.TopItem.Name .. FONT_COLOR_CODE_CLOSE .. ' | ' .. self:FormatMoney(trashData.TopItem.Amount, true) .. '\n'
+            str = str .. L['TITAN_TRASH_CASH_TOP_ITEM'] .. ':\t|c' .. TITAN_TRASH_CASH_TRASH_COLOR_HEX .. trashData.TopItem.Name .. FONT_COLOR_CODE_CLOSE .. ' | ' .. self:FormatMoney(trashData.TopItem.Amount, true) .. '\n'
         end
     else
         str = L['TITAN_TRASH_CASH_NO_TRASH']
@@ -106,17 +120,14 @@ function TitanTrashCash:ScheduleUpdate()
     end
 
     updatePending = true
-
-    C_Timer.After(UPDATE_THROTTLE, function()
-        updatePending = false
-        cachedTrashData = self:GetTrashData()
-        TitanPanelButton_UpdateButton(TITAN_TRASH_CASH_ID)
-    end)
+    C_Timer.After(TITAN_TRASH_CASH_UPDATE_THROTTLE, TitanTrashCash.RunPendingUpdate)
 end
 
----Parses events registered to the plugin and acts on them.
-function TitanTrashCash:BagUpdate()
-    self:ScheduleUpdate()
+---Callback of the throttle timer. Defined once so no closure is created per scan.
+function TitanTrashCash.RunPendingUpdate()
+    updatePending = false
+    TitanTrashCash:UpdateTrashData()
+    TitanPanelButton_UpdateButton(TITAN_TRASH_CASH_ID)
 end
 
 ---GetItemInfo returns nil for items that are not cached yet, so their sell price is
@@ -129,42 +140,42 @@ function TitanTrashCash:ItemInfoReceived(_, _, success)
     end
 end
 
----Gets the trash money amount and the total count of trash items.
+---Rescans all bags and refreshes the cached trash data.
 ---@return table data The trash data with Amount, Count and TopItem fields.
-function TitanTrashCash:GetTrashData()
-    local data = {
-        Amount = 0,
-        Count = 0,
-        TopItem = {
-            Name = '',
-            Amount = 0,
-        },
-    }
+function TitanTrashCash:UpdateTrashData()
+    local amount, count = 0, 0
+    local topItem = trashData.TopItem
+    local topName, topAmount = '', 0
 
     for bag = 0, maxBags do
-        for slot = 1, C_Container.GetContainerNumSlots(bag) do
-            local itemInfo = C_Container.GetContainerItemInfo(bag, slot)
+        for slot = 1, GetContainerNumSlots(bag) do
+            local itemInfo = GetContainerItemInfo(bag, slot)
 
-            if itemInfo and itemInfo.quality == 0 then -- Check if the item's quality is "poor" (gray items)
-                local itemName, _, _, _, _, _, _, _, _, _, itemSellPrice = C_Item.GetItemInfo(itemInfo.hyperlink)
+            if itemInfo and itemInfo.quality == QUALITY_POOR then
+                -- Querying by item ID avoids parsing the item link string.
+                local itemName, _, _, _, _, _, _, _, _, _, itemSellPrice = GetItemInfo(itemInfo.itemID)
 
                 if itemSellPrice and itemSellPrice > 0 then
                     local stackCount = itemInfo.stackCount or 1
-                    local itemTotalAmount = stackCount * itemSellPrice
 
-                    data.Count = data.Count + stackCount
-                    data.Amount = tonumber(data.Amount + itemTotalAmount)
+                    count = count + stackCount
+                    amount = amount + stackCount * itemSellPrice
 
-                    if itemSellPrice > data.TopItem.Amount then
-                        data.TopItem.Name = itemName
-                        data.TopItem.Amount = itemSellPrice
+                    if itemSellPrice > topAmount then
+                        topName = itemName
+                        topAmount = itemSellPrice
                     end
                 end
             end
         end
     end
 
-    return data
+    trashData.Amount = amount
+    trashData.Count = count
+    topItem.Name = topName
+    topItem.Amount = topAmount
+
+    return trashData
 end
 
 ---Formats the given amount of money in copper in human readable format.
@@ -175,9 +186,10 @@ function TitanTrashCash:FormatMoney(amount, tooltip)
     local str = ''
     local showIcon = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowIcon')
     local showColoredText = TitanGetVar(TITAN_TRASH_CASH_ID, 'ShowColoredText')
-    local gold = math.floor(math.abs(amount / 10000))
-    local silver = math.floor(math.abs((amount / 100) % 100))
-    local copper = math.floor(math.abs(amount % 100))
+    amount = math.abs(amount)
+    local gold = floor(amount / 10000)
+    local silver = floor((amount / 100) % 100)
+    local copper = floor(amount % 100)
     local amounts = {
         Gold = '',
         Silver = '',
@@ -185,9 +197,10 @@ function TitanTrashCash:FormatMoney(amount, tooltip)
     }
 
     if showIcon or tooltip then
-        amounts.Gold = gold .. ' ' .. self:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon')
-        amounts.Silver = silver .. ' ' .. self:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon')
-        amounts.Copper = copper .. ' ' .. self:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon')
+        local fontSize = TitanPanelGetVar('FontSize')
+        amounts.Gold = gold .. ' ' .. self:GetIconString('Interface\\MoneyFrame\\UI-GoldIcon', fontSize)
+        amounts.Silver = silver .. ' ' .. self:GetIconString('Interface\\MoneyFrame\\UI-SilverIcon', fontSize)
+        amounts.Copper = copper .. ' ' .. self:GetIconString('Interface\\MoneyFrame\\UI-CopperIcon', fontSize)
     else
         amounts.Gold = gold .. L['TITAN_GOLD_GOLD']
         amounts.Silver = silver .. L['TITAN_GOLD_SILVER']
@@ -232,8 +245,8 @@ end
 
 ---Gets an icon string.
 ---@param icon string The icon file path.
+---@param fontSize number|nil The icon size, defaults to the Titan Panel font size.
 ---@return string text
-function TitanTrashCash:GetIconString(icon)
-    local fontSize = TitanPanelGetVar('FontSize')
-    return '|T' .. icon .. ':' .. fontSize .. '|t'
+function TitanTrashCash:GetIconString(icon, fontSize)
+    return '|T' .. icon .. ':' .. (fontSize or TitanPanelGetVar('FontSize')) .. '|t'
 end

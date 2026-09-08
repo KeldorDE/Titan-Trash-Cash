@@ -1,8 +1,6 @@
-local L = LibStub('AceLocale-3.0'):NewLocale('Titan', 'ruRU', false)
-if not L then return end
+local L = LibStub('AceLocale-3.0'):NewLocale('Titan', 'ruRU', false) or {}
 
 -- Translator ZamestoTV
-L = L or {}
 L["TITAN_TRASH_CASH_AMOUNT"] = "Количество"
 L["TITAN_TRASH_CASH_ITEM"] = "Предмет"
 L["TITAN_TRASH_CASH_ITEMS"] = "Предметы"
